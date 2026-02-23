@@ -21,4 +21,9 @@ class Movie extends Model
         'language',
         'likeCount'
     ];
+
+    public function showtimes()
+    {
+        return $this->hasMany(Showtime::class);
+    }
 }

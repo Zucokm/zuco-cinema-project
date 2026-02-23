@@ -73,6 +73,42 @@
 
             </div>
 
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium">Manage Seats</h3>
+
+                    <a href="{{ route('admin.seats.create') }}"
+                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        + Add New Seat
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium">Manage ShowTimes</h3>
+
+                    <a href="{{ route('admin.showtimes.create') }}"
+                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        + Add New ShowTime
+                    </a>
+                </div>
+
+            </div>
+
+            <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-medium">Manage Food Types</h3>
+
+                    <a href="{{ route('admin.food-types.create') }}"
+                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        + Add New Food Type
+                    </a>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </x-app-layout>

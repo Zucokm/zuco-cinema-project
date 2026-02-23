@@ -8,8 +8,8 @@ class SeatType extends Model
 {
     protected $fillable = ['name', 'price', 'description'];
 
-    // public function seats()
-    // {
-    //     return $this->hasMany(Seat::class);
-    // }
+    public function seats()
+    {
+        return $this->hasMany(Seat::class);
+    }
 }

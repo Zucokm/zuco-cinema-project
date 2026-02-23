@@ -39,6 +39,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Seat Type Routes
     Route::resource('seat-types', \App\Http\Controllers\Admin\SeatTypeController::class);
+
+    // Seat Routes
+    Route::delete('seats/clear/{hall_id}', [\App\Http\Controllers\Admin\SeatController::class, 'clearByHall'])->name('seats.clear');
+    Route::resource('seats', \App\Http\Controllers\Admin\SeatController::class);
+
+    // Showtime Routes
+    Route::resource('showtimes', \App\Http\Controllers\Admin\ShowtimeController::class);
+
+    // Food Type Routes
+    Route::resource('food-types', \App\Http\Controllers\Admin\FoodTypeController::class);
     
 });
 // -------------------------------------------------------------

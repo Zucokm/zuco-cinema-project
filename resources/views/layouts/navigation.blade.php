@@ -20,82 +20,90 @@
                     </x-nav-link>
 
                     @if (Auth::user()->role === 'admin')
-                        <div class="hidden sm:flex sm:items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                        <div>🎬 Movies & Shows</div>
-                                        <div class="ms-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </x-slot>
+                    <div class="hidden sm:flex sm:items-center">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>🎬 Movies & Shows</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('admin.movies.index')">
-                                        {{ __('Movies List') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('admin.showtimes.index')">
-                                        {{ __('Showtimes') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('admin.movies.index')">
+                                    {{ __('Movies List') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.showtimes.index')">
+                                    {{ __('Showtimes') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
 
-                        <div class="hidden sm:flex sm:items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                        <div>🏢 Cinema Setup</div>
-                                        <div class="ms-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </x-slot>
+                    <div class="hidden sm:flex sm:items-center">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>🏢 Cinema Setup</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('admin.cinemas.index')">
-                                        {{ __('Cinemas') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('admin.cinema-halls.index')">
-                                        {{ __('Cinema Halls') }}
-                                    </x-dropdown-link>
-                                    <div class="border-t border-gray-100 dark:border-gray-700"></div>
-                                    <x-dropdown-link :href="route('admin.seat-types.index')">
-                                        {{ __('Seat Types') }}
-                                    </x-dropdown-link>
-                                    <x-dropdown-link :href="route('admin.seats.index')">
-                                        {{ __('Seats Layout') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('admin.cinemas.index')">
+                                    {{ __('Cinemas') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.cinema-halls.index')">
+                                    {{ __('Cinema Halls') }}
+                                </x-dropdown-link>
+                                <div class="border-t border-gray-100 dark:border-gray-700"></div>
+                                <x-dropdown-link :href="route('admin.seat-types.index')">
+                                    {{ __('Seat Types') }}
+                                </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.seats.index')">
+                                    {{ __('Seats Layout') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
 
 
-                        <div class="hidden sm:flex sm:items-center">
-                            <x-dropdown align="left" width="48">
-                                <x-slot name="trigger">
-                                    <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
-                                        <div>Food Setup</div>
-                                        <div class="ms-1">
-                                            <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                </x-slot>
+                    <div class="hidden sm:flex sm:items-center">
+                        <x-dropdown align="left" width="48">
+                            <x-slot name="trigger">
+                                <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                                    <div>Food Setup</div>
+                                    <div class="ms-1">
+                                        <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                </button>
+                            </x-slot>
 
-                                <x-slot name="content">
-                                    <x-dropdown-link :href="route('admin.food-types.index')">
-                                        {{ __('Food Types') }}
-                                    </x-dropdown-link>
-                                </x-slot>
-                            </x-dropdown>
-                        </div>
+                            <x-slot name="content">
+                                <x-dropdown-link :href="route('admin.food-types.index')">
+                                    {{ __('Food Categories') }}
+                                </x-dropdown-link>
+
+                                <x-dropdown-link :href="route('admin.food-items.index')">
+                                    {{ __('Food Items') }}
+                                </x-dropdown-link>
+
+                                <x-dropdown-link :href="route('admin.cinema-items.index')">
+                                    {{ __('Cinema Menus (Stock)') }}
+                                </x-dropdown-link>
+                            </x-slot>
+                        </x-dropdown>
+                    </div>
                     @endif
                 </div>
             </div>
@@ -146,27 +154,39 @@
             </x-responsive-nav-link>
 
             @if (Auth::user()->role === 'admin')
-                <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Movies & Shows</div>
-                <x-responsive-nav-link :href="route('admin.movies.index')" :active="request()->routeIs('admin.movies.*')">
-                    - {{ __('Movies') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.showtimes.index')" :active="request()->routeIs('admin.showtimes.*')">
-                    - {{ __('Showtimes') }}
-                </x-responsive-nav-link>
+            <div class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Movies & Shows</div>
+            <x-responsive-nav-link :href="route('admin.movies.index')" :active="request()->routeIs('admin.movies.*')">
+                - {{ __('Movies') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.showtimes.index')" :active="request()->routeIs('admin.showtimes.*')">
+                - {{ __('Showtimes') }}
+            </x-responsive-nav-link>
 
-                <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cinema Setup</div>
-                <x-responsive-nav-link :href="route('admin.cinemas.index')" :active="request()->routeIs('admin.cinemas.*')">
-                    - {{ __('Cinemas') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.cinema-halls.index')" :active="request()->routeIs('admin.cinema-halls.*')">
-                    - {{ __('Cinema Halls') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.seat-types.index')" :active="request()->routeIs('admin.seat-types.*')">
-                    - {{ __('Seat Types') }}
-                </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('admin.seats.index')" :active="request()->routeIs('admin.seats.*')">
-                    - {{ __('Seats Layout') }}
-                </x-responsive-nav-link>
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Cinema Setup</div>
+            <x-responsive-nav-link :href="route('admin.cinemas.index')" :active="request()->routeIs('admin.cinemas.*')">
+                - {{ __('Cinemas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.cinema-halls.index')" :active="request()->routeIs('admin.cinema-halls.*')">
+                - {{ __('Cinema Halls') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.seat-types.index')" :active="request()->routeIs('admin.seat-types.*')">
+                - {{ __('Seat Types') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.seats.index')" :active="request()->routeIs('admin.seats.*')">
+                - {{ __('Seats Layout') }}
+            </x-responsive-nav-link>
+
+            <div class="px-4 py-2 mt-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Food & Beverage</div>
+            <x-responsive-nav-link :href="route('admin.food-types.index')" :active="request()->routeIs('admin.food-types.*')">
+                - {{ __('Food Categories') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('admin.food-items.index')" :active="request()->routeIs('admin.food-items.*')">
+                - {{ __('Food Items') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('admin.cinema-items.index')" :active="request()->routeIs('admin.cinema-items.*')">
+                - {{ __('Cinema Menus (Stock)') }}
+            </x-responsive-nav-link>
             @endif
         </div>
 

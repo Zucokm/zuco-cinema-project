@@ -49,7 +49,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Food Type Routes
     Route::resource('food-types', \App\Http\Controllers\Admin\FoodTypeController::class);
+
+    // Food Item Routes
+    Route::resource('food-items', \App\Http\Controllers\Admin\FoodItemController::class);
     
+    // Cinema Item
+    Route::get('cinema-items', [\App\Http\Controllers\Admin\CinemaItemController::class, 'index'])->name('cinema-items.index');
+    Route::get('cinema-items/{cinema}/manage', [\App\Http\Controllers\Admin\CinemaItemController::class, 'manage'])->name('cinema-items.manage');
+    Route::post('cinema-items/{cinema}/store', [\App\Http\Controllers\Admin\CinemaItemController::class, 'store'])->name('cinema-items.store');
+
+
 });
 // -------------------------------------------------------------
 

@@ -12,8 +12,8 @@ class FoodType extends Model
         'isActive',
     ];
 
-    // public function foodItems()
-    // {
-    //     return $this->hasMany(FoodItem::class);
-    // }
+    public function foodItems()
+    {
+        return $this->hasMany(FoodItem::class);
+    }
 }

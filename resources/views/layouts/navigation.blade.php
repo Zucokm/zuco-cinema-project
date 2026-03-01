@@ -1,4 +1,4 @@
-@if(request()->routeIs('home', 'movie.*', 'book.*', 'login', 'register', 'password.*') || (Auth::check() && Auth::user()->role !== 'admin'))
+@if((request()->routeIs('home', 'movie.*', 'book.*','cinema.*', 'login', 'register', 'password.*') && (!Auth::check() || Auth::user()->role !== 'admin')))
 <nav class="bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-[70px]">
@@ -22,9 +22,13 @@
 
             <div class="flex items-center space-x-6 flex-shrink-0">
                 @auth
-                <a href="{{ Auth::user()->role === 'admin' ? route('admin.dashboard') : route('my-tickets') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">
-                    {{ Auth::user()->role === 'admin' ? 'Dashboard' : 'My Tickets' }}
-                </a>
+                @if(Auth::user()->role === 'admin')
+                    <a href="{{ route('admin.pos') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">POS</a>
+                    <a href="{{ route('my-tickets') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">My Tickets</a>
+                    <a href="{{ route('admin.dashboard') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Dashboard</a>
+                @else
+                    <a href="{{ route('my-tickets') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">My Tickets</a>
+                @endif
 
                 <div class="relative">
                     <x-dropdown align="right" width="48">
@@ -86,6 +90,13 @@
                     </x-nav-link>
 
                     @if (Auth::check() && Auth::user()->role === 'admin')
+                    <x-nav-link :href="route('admin.pos')" :active="request()->routeIs('admin.pos')">
+                        {{ __('POS') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('my-tickets')" :active="request()->routeIs('my-tickets')">
+                        {{ __('My Tickets') }}
+                    </x-nav-link>
+
                     <div class="hidden sm:flex sm:items-center">
                         <x-dropdown align="left" width="48">
                             <x-slot name="trigger">
@@ -164,6 +175,9 @@
                                 <x-dropdown-link :href="route('admin.cinema-items.index')">
                                     {{ __('Cinema Menus (Stock)') }}
                                 </x-dropdown-link>
+                                <x-dropdown-link :href="route('admin.pos')">
+                                    {{ __('POS / Booking') }}
+                                </x-dropdown-link>
                             </x-slot>
                         </x-dropdown>
                     </div>
@@ -219,6 +233,12 @@
             </x-responsive-nav-link>
 
             @if (Auth::check() && Auth::user()->role === 'admin')
+            <x-responsive-nav-link :href="route('admin.pos')" :active="request()->routeIs('admin.pos')">
+                {{ __('POS') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('my-tickets')" :active="request()->routeIs('my-tickets')">
+                {{ __('My Tickets') }}
+            </x-responsive-nav-link>
             @endif
         </div>
 

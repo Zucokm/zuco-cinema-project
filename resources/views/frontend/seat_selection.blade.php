@@ -1,7 +1,7 @@
 <x-app-layout>
     <nav class="bg-[#0b1120] border-b border-gray-800 sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-[70px]">
-            <a href="{{ route('movie.details', $showtime->movie_id) }}" class="text-gray-300 hover:text-[#df1873] flex items-center gap-2 font-semibold transition">
+            <a href="{{ (Auth::check() && Auth::user()->role === 'admin') ? route('admin.pos') : route('movie.details', $showtime->movie_id) }}" class="text-gray-300 hover:text-[#df1873] flex items-center gap-2 font-semibold transition">
                 <span>&larr; Back</span>
             </a>
             <div class="text-center">

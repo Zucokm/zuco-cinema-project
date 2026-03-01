@@ -11,6 +11,7 @@ use App\Http\Controllers\Frontend\PageController;
 // ==========================================
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/movies/{movie}', [PageController::class, 'movieDetails'])->name('movie.details');
+Route::get('/cinemas/{cinema}', [PageController::class, 'cinemaDetails'])->name('cinema.details');
 
 
 // ==========================================
@@ -66,7 +67,50 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Dashboard
     Route::get('/dashboard', function () {
-        return view('admin.dashboard');
+        $today = \Carbon\Carbon::today();
+
+        $todayRevenue = \App\Models\Booking::whereDate('created_at', $today)
+            ->where('status', 'confirmed')
+            ->sum('total_amount');
+
+        $todayTickets = \App\Models\Ticket::whereHas('booking', function ($query) use ($today) {
+            $query->whereDate('created_at', $today)
+                  ->where('status', 'confirmed');
+        })->count();
+
+        $todaysBookings = \App\Models\Booking::whereDate('created_at', $today)
+            ->where('status', 'confirmed')
+            ->with(['user', 'showtime.movie', 'showtime.cinemaHall'])
+            ->latest()
+            ->get();
+
+        // Monthly Revenue for Chart
+        $monthlyStats = \App\Models\Booking::selectRaw('SUM(total_amount) as total, MONTH(created_at) as month')
+            ->whereYear('created_at', date('Y'))
+            ->where('status', 'confirmed')
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('total', 'month')
+            ->toArray();
+
+        $chartData = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $chartData[] = $monthlyStats[$i] ?? 0;
+        }
+
+        // Tickets per Movie for Pie Chart
+        $ticketsPerMovie = \App\Models\Ticket::whereHas('booking', function ($q) {
+                $q->where('status', 'confirmed');
+            })
+            ->join('bookings', 'tickets.booking_id', '=', 'bookings.id')
+            ->join('showtimes', 'bookings.showtime_id', '=', 'showtimes.id')
+            ->join('movies', 'showtimes.movie_id', '=', 'movies.id')
+            ->select('movies.title', \Illuminate\Support\Facades\DB::raw('count(tickets.id) as count'))
+            ->groupBy('movies.title')
+            ->pluck('count', 'movies.title')
+            ->toArray();
+
+        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todaysBookings', 'chartData', 'ticketsPerMovie'));
     })->name('dashboard');
 
     // Staff
@@ -91,6 +135,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('cinema-items', [\App\Http\Controllers\Admin\CinemaItemController::class, 'index'])->name('cinema-items.index');
     Route::get('cinema-items/{cinema}/manage', [\App\Http\Controllers\Admin\CinemaItemController::class, 'manage'])->name('cinema-items.manage');
     Route::post('cinema-items/{cinema}/store', [\App\Http\Controllers\Admin\CinemaItemController::class, 'store'])->name('cinema-items.store');
+
+    // Admin POS (Booking)
+    Route::get('/pos', [BookingController::class, 'pos'])->name('pos');
 });
 
 require __DIR__ . '/auth.php';

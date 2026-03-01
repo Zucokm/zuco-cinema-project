@@ -6,20 +6,24 @@
 
             <div class="text-center mb-20 mt-4">
                 <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-6 tracking-tight">Let's Find Your Next Movie</h2>
-                <div class="max-w-2xl mx-auto relative group">
+                <form action="{{ route('home') }}" method="GET" class="max-w-2xl mx-auto relative group">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <svg class="h-5 w-5 text-gray-500 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                     </div>
-                    <input type="text" placeholder="Search movies, genres..." class="w-full bg-[#111] border border-gray-800 text-white pl-12 pr-6 py-4 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 placeholder-gray-600 transition-all shadow-lg">
-                </div>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search movies, genres..." class="w-full bg-[#111] border border-gray-800 text-white pl-12 pr-6 py-4 rounded-xl focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 placeholder-gray-600 transition-all shadow-lg">
+                </form>
             </div>
 
             <div class="mb-16">
                 <div class="flex items-center justify-between mb-8">
-                    <h3 class="text-2xl font-bold text-white tracking-wide">Recommended Movies</h3>
-                    <a href="#" class="text-sm font-semibold text-indigo-500 hover:text-indigo-400 transition-colors">View All &rarr;</a>
+                    <h3 class="text-2xl font-bold text-white tracking-wide">{{ request('search') ? 'Search Results' : 'Recommended Movies' }}</h3>
+                    @if(request('search'))
+                        <a href="{{ route('home') }}" class="text-sm font-semibold text-gray-500 hover:text-white transition-colors">Clear Search</a>
+                    @else
+                        <a href="#" class="text-sm font-semibold text-indigo-500 hover:text-indigo-400 transition-colors">View All &rarr;</a>
+                    @endif
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-8">
@@ -63,7 +67,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
                     @foreach($cinemas as $cinema)
-                    <a href="#" class="relative rounded-2xl overflow-hidden aspect-video group cursor-pointer border border-gray-800 shadow-xl block">
+                    <a href="{{ route('cinema.details', $cinema->id) }}" class="relative rounded-2xl overflow-hidden aspect-video group cursor-pointer border border-gray-800 shadow-xl block">
                         @if($cinema->photoPath)
                         <img src="{{ asset('storage/' . $cinema->photoPath) }}" alt="{{ $cinema->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out">
                         @else

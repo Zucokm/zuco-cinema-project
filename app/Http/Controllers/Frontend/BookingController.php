@@ -7,6 +7,7 @@ use App\Models\Showtime;
 use App\Models\Ticket;
 use App\Models\Booking;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -14,7 +15,7 @@ class BookingController extends Controller
     {
 
         $cinemaHall = $showtime->cinemaHall()->with('cinema')->first();
-        $seatsByRow = $cinemaHall->seats()->get()->groupBy('row');
+        $seatsByRow = $cinemaHall->seats()->orderBy('row')->orderBy('number')->get()->groupBy('row');
 
 
         $bookedSeatIds = Ticket::whereHas('booking', function ($query) use ($showtime) {
@@ -54,7 +55,12 @@ class BookingController extends Controller
             return $seat->seatType ? $seat->seatType->price : 5000;
         });
 
-        $foodItems = \App\Models\FoodItem::all();
+        // Filter food items based on Cinema availability (Cinema Menus Stock)
+        $cinemaId = $showtime->cinemaHall->cinema_id;
+        $foodItems = \App\Models\FoodItem::whereHas('cinemaItems', function ($query) use ($cinemaId) {
+            $query->where('cinema_id', $cinemaId)
+                  ->where('isAvailable', true);
+        })->get();
 
         return view('frontend.food_selection', compact('showtime', 'seats', 'seatTotal', 'foodItems'));
     }
@@ -130,94 +136,111 @@ class BookingController extends Controller
             return redirect()->route('home')->with('error', 'No seats selected.');
         }
 
+        try {
+            return DB::transaction(function () use ($seatIds, $showtime) {
+                // 1. Check for Double Booking (Race Condition Check)
+                // ဒီ Showtime အတွက် ရွေးထားတဲ့ခုံတွေက ရောင်းပြီးသား (သို့) Pending ဖြစ်နေပြီလား စစ်မယ်
+                $isTaken = Ticket::whereHas('booking', function ($query) use ($showtime) {
+                    $query->where('showtime_id', $showtime->id)
+                          ->whereIn('status', ['confirmed', 'pending']);
+                })->whereIn('seat_id', $seatIds)->exists();
 
-        $seats = \App\Models\Seat::whereIn('id', $seatIds)->with('seatType')->get();
-        $seatTotal = $seats->sum(function ($seat) {
-            return $seat->seatType ? $seat->seatType->price : 5000;
-        });
+                if ($isTaken) {
+                    throw new \Exception('Oh no! Some seats were just booked by another user. Please select different seats.');
+                }
 
+                // 2. Calculate Totals
+                $seats = \App\Models\Seat::whereIn('id', $seatIds)->with('seatType')->get();
+                $seatTotal = $seats->sum(function ($seat) {
+                    return $seat->seatType ? $seat->seatType->price : 5000;
+                });
 
-        $foodCart = session('booking_food', []);
-        $foodTotal = 0;
-        $totalFoodQty = 0;
-        $foodItemsList = [];
+                $foodCart = session('booking_food', []);
+                $foodTotal = 0;
+                $totalFoodQty = 0;
+                $foodItemsList = [];
 
-        if (!empty($foodCart)) {
-            $foodItems = \App\Models\FoodItem::whereIn('id', array_keys($foodCart))->get();
-            foreach ($foodItems as $item) {
-                $qty = $foodCart[$item->id];
-                $foodTotal += ($item->price * $qty);
-                $totalFoodQty += $qty;
-                $foodItemsList[] = $item;
-            }
-        }
+                if (!empty($foodCart)) {
+                    $foodItems = \App\Models\FoodItem::whereIn('id', array_keys($foodCart))->get();
+                    foreach ($foodItems as $item) {
+                        $qty = $foodCart[$item->id];
+                        $foodTotal += ($item->price * $qty);
+                        $totalFoodQty += $qty;
+                        $foodItemsList[] = $item;
+                    }
+                }
 
-
-        $booking = \App\Models\Booking::create([
-            'user_id' => auth()->id(),
-            'showtime_id' => $showtime->id,
-            'booking_reference' => 'ZUCO-' . strtoupper(uniqid()),
-            'total_amount' => $seatTotal + $foodTotal,
-            'status' => 'confirmed',
-        ]);
-
-
-        foreach ($seats as $seat) {
-            \App\Models\Ticket::create([
-                'booking_id' => $booking->id,
-                'seat_id' => $seat->id,
-                'price' => $seat->seatType ? $seat->seatType->price : 5000,
-            ]);
-        }
-
-
-        if (!empty($foodCart) && $foodTotal > 0) {
-
-
-            $foodOrder = \App\Models\FoodOrder::create([
-                'booking_id' => $booking->id,
-                'total_amount' => $foodTotal,
-                'status' => 'confirmed',
-                'total_items' => $totalFoodQty,
-            ]);
-
-
-            foreach ($foodItemsList as $item) {
-                \App\Models\OrderItem::create([
-                    'food_order_id' => $foodOrder->id,
-                    'food_item_id' => $item->id,
-                    'price' => $item->price,
-                    'quantity' => $foodCart[$item->id],
+                // 3. Create Booking
+                $booking = \App\Models\Booking::create([
+                    'user_id' => auth()->id(),
+                    'showtime_id' => $showtime->id,
+                    'booking_reference' => 'ZUCO-' . strtoupper(uniqid()),
+                    'total_amount' => $seatTotal + $foodTotal,
+                    'status' => 'confirmed',
                 ]);
-            }
+
+                // 4. Create Tickets
+                foreach ($seats as $seat) {
+                    \App\Models\Ticket::create([
+                        'booking_id' => $booking->id,
+                        'seat_id' => $seat->id,
+                        'price' => $seat->seatType ? $seat->seatType->price : 5000,
+                    ]);
+                }
+
+                // 5. Create Food Orders
+                if (!empty($foodCart) && $foodTotal > 0) {
+                    $foodOrder = \App\Models\FoodOrder::create([
+                        'booking_id' => $booking->id,
+                        'total_amount' => $foodTotal,
+                        'status' => 'confirmed',
+                        'total_items' => $totalFoodQty,
+                    ]);
+
+                    foreach ($foodItemsList as $item) {
+                        \App\Models\OrderItem::create([
+                            'food_order_id' => $foodOrder->id,
+                            'food_item_id' => $item->id,
+                            'price' => $item->price,
+                            'quantity' => $foodCart[$item->id],
+                        ]);
+                    }
+                }
+
+                session()->forget(['booking_seats', 'booking_food']);
+
+                if (auth()->user()->role === 'admin') {
+                    return redirect()->route('admin.pos')
+                        ->with('success', 'Booking Confirmed Successfully!')
+                        ->with('last_booking_id', $booking->id);
+                }
+
+                return redirect()->route('my-tickets')->with('success', 'Payment Successful! Your tickets and food have been booked.');
+            });
+        } catch (\Exception $e) {
+            // Error တက်ရင် Session ရှင်းပြီး ပြန်ရွေးခိုင်းမယ်
+            session()->forget(['booking_seats', 'booking_food']);
+            return redirect()->route('book.seats', $showtime->id)->with('error', $e->getMessage());
         }
-
-
-        session()->forget(['booking_seats', 'booking_food']);
-
-        return redirect()->route('home')->with('success', 'Payment Successful! Your tickets and food have been booked.');
     }
 
     public function cancelBooking(Request $request, Booking $booking)
     {
-        // 1. Authorization: ကိုယ်ပိုင်တဲ့ Booking ဟုတ်မဟုတ် စစ်မယ်
         if ($booking->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // 2. Validation: Cancel လုပ်ပြီးသားလား (သို့) ရုပ်ရှင်ပြပြီးသွားပြီလား စစ်မယ်
         if ($booking->status === 'cancelled') {
             return back()->with('error', 'This booking is already cancelled.');
         }
 
         $showtimeStart = \Carbon\Carbon::parse($booking->showtime->date . ' ' . $booking->showtime->start_time);
         
-        if ($showtimeStart->isPast()) {
-            return back()->with('error', 'You cannot cancel a booking for a showtime that has already started or passed.');
+
+        if ($showtimeStart->subHour()->isPast()) {
+            return back()->with('error', 'You can only cancel bookings up to 1 hour before the showtime.');
         }
 
-        // 3. Process: Status ကို Cancelled ပြောင်းမယ်
-        // (Seat Selection Logic မှာ status 'confirmed'/'pending' ကိုပဲ ယူထားလို့ ဒီလိုပြောင်းလိုက်တာနဲ့ ခုံတွေ အလိုလို ပြန်အားသွားပါလိမ့်မယ်)
         $booking->update([
             'status' => 'cancelled'
         ]);
@@ -234,5 +257,22 @@ class BookingController extends Controller
         $booking->load(['showtime.movie', 'showtime.cinemaHall.cinema', 'tickets.seat', 'foodOrders.orderItems.foodItem']);
 
         return view('frontend.ticket', compact('booking'));
+    }
+
+    public function pos(Request $request)
+    {
+        $query = \App\Models\Movie::whereHas('showtimes', function($q) {
+            $q->where('date', '>=', \Carbon\Carbon::today());
+        });
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $movies = $query->with(['showtimes' => function($q) {
+            $q->where('date', '>=', \Carbon\Carbon::today())->orderBy('date')->orderBy('start_time');
+        }, 'showtimes.cinemaHall.cinema'])->get();
+
+        return view('admin.pos', compact('movies'));
     }
 }

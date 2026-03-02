@@ -1,4 +1,4 @@
-@if((request()->routeIs('home', 'movie.*', 'book.*','cinema.*', 'login', 'register', 'password.*') && (!Auth::check() || Auth::user()->role !== 'admin')))
+@if((request()->routeIs('home', 'movie.*', 'movies.*', 'book.*', 'cinema.*', 'cinemas.*', 'login', 'my-tickets', 'register', 'password.*') && (!Auth::check() || Auth::user()->role !== 'admin')))
 <nav class="bg-[#0a0a0a]/80 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50 transition-all duration-300">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-[70px]">
@@ -14,8 +14,8 @@
             </div>
 
             <div class="hidden md:flex space-x-8 items-center justify-center flex-1">
-                <a href="{{ route('home') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Movies</a>
-                <a href="#" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Cinemas</a>
+                <a href="{{ route('movies.index') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Movies</a>
+                <a href="{{ route('cinemas.index') }}" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Cinemas</a>
                 <a href="#" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">Contact Us</a>
                 <a href="#" class="text-white font-bold text-sm hover:text-[#df1873] transition-colors">About Us</a>
             </div>

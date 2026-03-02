@@ -27,6 +27,44 @@ class PageController extends Controller
         return view('frontend.home', compact('movies', 'cinemas'));
     }
 
+    public function movies(Request $request)
+    {
+        $tab = $request->get('tab', 'now_showing');
+        $query = Movie::query();
+
+        if ($request->filled('search')) {
+            $query->where(function($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('genre', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('genre')) {
+            $query->where('genre', $request->genre);
+        }
+
+        if ($tab === 'coming_soon') {
+            $query->whereDoesntHave('showtimes', function($q) {
+                $q->where('date', '>=', Carbon::today());
+            });
+        } else {
+            $query->whereHas('showtimes', function($q) {
+                $q->where('date', '>=', Carbon::today());
+            });
+        }
+
+        $movies = $query->latest()->paginate(12)->withQueryString();
+
+        $genres = Movie::select('genre')->distinct()->whereNotNull('genre')->orderBy('genre')->pluck('genre');
+
+        return view('frontend.movies', compact('movies', 'tab', 'genres'));
+    }
+
+    public function cinemas()
+    {
+        $cinemas = Cinema::latest()->get();
+        return view('frontend.cinemas', compact('cinemas'));
+    }
 
     public function movieDetails(Movie $movie)
     {

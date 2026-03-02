@@ -10,6 +10,8 @@ use App\Http\Controllers\Frontend\PageController;
 
 // ==========================================
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/movies', [PageController::class, 'movies'])->name('movies.index');
+Route::get('/cinemas', [PageController::class, 'cinemas'])->name('cinemas.index');
 Route::get('/movies/{movie}', [PageController::class, 'movieDetails'])->name('movie.details');
 Route::get('/cinemas/{cinema}', [PageController::class, 'cinemaDetails'])->name('cinema.details');
 

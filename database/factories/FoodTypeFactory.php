@@ -1,0 +1,25 @@
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\FoodType>
+ */
+class FoodTypeFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
+    public function definition(): array
+    {
+        return [
+            'name' => fake()->randomElement(['Beverage', 'Snack', 'Combo', 'Dessert']),
+            'imagePath' => fake()->imageUrl(200, 200, 'food'),
+            'isActive' => true,
+        ];
+    }
+}

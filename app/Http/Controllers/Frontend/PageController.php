@@ -93,6 +93,10 @@ class PageController extends Controller
                 $q->where('cinema_id', $cinema->id);
             })
             ->where('date', '>=', Carbon::today())
+            ->with(['cinemaHall', 'bookings' => function($q) {
+                // Confirmed သို့မဟုတ် Pending ဖြစ်နေသော Booking များကိုသာ ရေတွက်မည်
+                $q->whereIn('status', ['confirmed', 'pending'])->withCount('tickets');
+            }])
             ->orderBy('date')
             ->orderBy('start_time');
         }])

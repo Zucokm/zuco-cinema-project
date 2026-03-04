@@ -11,12 +11,14 @@
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
-            .ticket-container { box-shadow: none; border: 1px solid #000; }
+            .ticket-container { box-shadow: none; border: 1px solid #000; page-break-after: always; margin-bottom: 20px; break-inside: avoid; }
+            .ticket-container:last-child { page-break-after: auto; }
         }
     </style>
 </head>
-<body class="bg-gray-900 min-h-screen flex flex-col items-center justify-center p-4 text-gray-800">
+<body class="bg-gray-900 min-h-screen flex flex-col items-center py-12 p-4 text-gray-800 gap-8">
 
+    @foreach($booking->tickets as $ticket)
     <div class="ticket-container max-w-sm w-full bg-white shadow-2xl rounded-sm overflow-hidden relative">
         @if($booking->status === 'cancelled')
             <div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -68,11 +70,9 @@
             </div>
 
             <div class="text-center py-2">
-                <p class="text-xs text-gray-500 uppercase mb-1">Seats</p>
+                <p class="text-xs text-gray-500 uppercase mb-1">Seat</p>
                 <div class="flex flex-wrap justify-center gap-2">
-                    @foreach($booking->tickets as $ticket)
-                        <span class="bg-black text-white px-2 py-1 text-sm font-bold rounded">{{ $ticket->seat->seat_code }}</span>
-                    @endforeach
+                    <span class="bg-black text-white px-4 py-2 text-xl font-bold rounded">{{ $ticket->seat->seat_code }}</span>
                 </div>
             </div>
             
@@ -101,14 +101,17 @@
                 <p class="text-lg font-bold tracking-widest">{{ $booking->booking_reference }}</p>
             </div>
             
-            <!-- Fake Barcode -->
-            <div class="h-12 bg-black w-3/4 mx-auto mt-4" style="mask-image: repeating-linear-gradient(90deg, black, black 2px, transparent 2px, transparent 4px);"></div>
+            <!-- QR Code -->
+            <div class="flex justify-center mt-4">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ $booking->booking_reference }}" alt="QR Code" class="w-32 h-32">
+            </div>
             <p class="text-[10px] text-gray-400 mt-2">Scan this at the entrance</p>
         </div>
     </div>
+    @endforeach
 
     <!-- Action Buttons -->
-    <div class="mt-8 flex gap-4 no-print">
+    <div class="mt-4 flex gap-4 no-print sticky bottom-8 z-50">
         <button onclick="window.print()" class="bg-[#df1873] hover:bg-[#c21463] text-white px-6 py-3 rounded-full font-bold shadow-lg transition transform hover:-translate-y-1 flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
             Download / Print

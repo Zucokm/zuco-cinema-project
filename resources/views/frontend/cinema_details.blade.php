@@ -1,7 +1,17 @@
 <x-app-layout>
-    <!-- Cinema Header -->
+    <style>
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+
     <div class="relative h-[40vh] w-full overflow-hidden">
-        <!-- Background Image -->
         @if($cinema->photoPath)
             <img src="{{ asset('storage/' . $cinema->photoPath) }}" class="w-full h-full object-cover opacity-40">
         @else
@@ -24,7 +34,6 @@
         </div>
     </div>
 
-    <!-- Movies List -->
     <div class="bg-[#0a0a0a] min-h-screen py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 class="text-2xl font-bold text-white mb-8 border-l-4 border-[#df1873] pl-4">Now Showing</h2>
@@ -36,9 +45,7 @@
             @else
                 <div class="space-y-12">
                     @foreach($movies as $movie)
-                        <!-- Movie Card -->
                         <div class="bg-[#111] rounded-2xl p-6 border border-gray-800 flex flex-col md:flex-row gap-8 shadow-lg hover:border-gray-700 transition-colors">
-                            <!-- Poster -->
                             <div class="w-full md:w-48 shrink-0">
                                 @if($movie->imagePath)
                                     <img src="{{ asset('storage/' . $movie->imagePath) }}" class="rounded-lg w-full shadow-lg object-cover aspect-[2/3]">
@@ -47,38 +54,72 @@
                                 @endif
                             </div>
                             
-                            <!-- Details & Showtimes -->
-                            <div class="flex-1">
-                                <h3 class="text-2xl font-bold text-white mb-2">{{ $movie->title }}</h3>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-2xl font-bold text-white mb-2 truncate">{{ $movie->title }}</h3>
                                 <div class="flex flex-wrap gap-4 text-sm text-gray-400 mb-6">
                                     <span class="bg-gray-800 px-2 py-1 rounded">{{ $movie->duration }} mins</span>
                                     <span class="bg-gray-800 px-2 py-1 rounded">{{ $movie->genre }}</span>
                                     <span class="bg-gray-800 px-2 py-1 rounded">{{ $movie->language }}</span>
                                 </div>
 
-                                <!-- Showtimes Grouped by Date -->
                                 @php
-                                    $showtimesByDate = $movie->showtimes->groupBy('date');
+                                    $showtimesByDate = $movie->showtimes->groupBy('date')->sortKeys();
                                 @endphp
 
-                                <div class="space-y-4">
-                                    @foreach($showtimesByDate as $date => $showtimes)
-                                        <div class="flex flex-col sm:flex-row sm:items-start gap-4 border-b border-gray-800 pb-4 last:border-0 last:pb-0">
-                                            <div class="w-32 shrink-0 pt-1">
-                                                <span class="text-[#df1873] font-bold block">{{ \Carbon\Carbon::parse($date)->format('D, d M') }}</span>
-                                            </div>
-                                            <div class="flex flex-wrap gap-3">
-                                                @foreach($showtimes as $showtime)
+                                @if($showtimesByDate->isNotEmpty())
+                                <div x-data="{ selectedDate: '{{ $showtimesByDate->keys()->first() }}' }" class="mt-6">
+                                    
+                                    <div class="flex overflow-x-auto gap-3 pb-3 mb-4 border-b border-gray-800/50 no-scrollbar">
+                                        @foreach($showtimesByDate->keys() as $date)
+                                            <button 
+                                                @click="selectedDate = '{{ $date }}'"
+                                                :class="selectedDate === '{{ $date }}' ? 'bg-[#df1873] text-white border-[#df1873]' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700 hover:text-white'"
+                                                class="flex flex-col items-center justify-center min-w-[70px] py-2 px-3 rounded-lg border transition-all text-xs sm:text-sm shrink-0">
+                                                <span class="font-bold uppercase">{{ \Carbon\Carbon::parse($date)->format('M d') }}</span>
+                                                <span class="text-[10px] opacity-80">{{ \Carbon\Carbon::parse($date)->format('D') }}</span>
+                                            </button>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="min-h-[80px]">
+                                        @foreach($showtimesByDate as $date => $showtimes)
+                                            <div x-show="selectedDate === '{{ $date }}'" 
+                                                 style="display: none;"
+                                                 x-transition:enter="transition ease-out duration-200"
+                                                 x-transition:enter-start="opacity-0 transform scale-95"
+                                                 x-transition:enter-end="opacity-100 transform scale-100"
+                                                 class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                                                
+                                                @foreach($showtimes->sortBy('start_time') as $showtime)
+                                                    @php
+                                                        // တွက်ချက်မှုများ
+                                                        $bookedSeats = $showtime->bookings->sum('tickets_count');
+                                                        $totalSeats = $showtime->cinemaHall->totalSeats;
+                                                        $isSoldOut = $bookedSeats >= $totalSeats;
+                                                    @endphp
+
+                                                    @if($isSoldOut)
+                                                    <div class="group flex flex-col items-center justify-center px-2 py-3 bg-gray-900/50 border border-gray-800 rounded-xl cursor-not-allowed opacity-60">
+                                                        <span class="text-sm sm:text-base font-bold text-gray-500 line-through">{{ \Carbon\Carbon::parse($showtime->start_time)->format('h:i A') }}</span>
+                                                        <span class="text-[10px] text-red-500 font-bold mt-1 uppercase tracking-wider">Sold Out</span>
+                                                    </div>
+                                                    @else
                                                     <a href="{{ route('book.seats', $showtime->id) }}" 
-                                                       class="group flex flex-col items-center justify-center px-4 py-2 bg-gray-800 hover:bg-[#df1873] text-white rounded-lg transition-all border border-gray-700 hover:border-[#df1873] min-w-[100px]">
-                                                        <span class="text-sm font-bold">{{ \Carbon\Carbon::parse($showtime->start_time)->format('h:i A') }}</span>
-                                                        <span class="text-[10px] font-normal text-gray-400 group-hover:text-white/80">{{ $showtime->cinemaHall->name }}</span>
+                                                       class="group flex flex-col items-center justify-center px-2 py-3 bg-gray-800/50 hover:bg-[#df1873] text-white rounded-xl transition-all border border-gray-700 hover:border-[#df1873] shadow-sm">
+                                                        <span class="text-sm sm:text-base font-bold">{{ \Carbon\Carbon::parse($showtime->start_time)->format('h:i A') }}</span>
+                                                        <span class="text-[10px] text-gray-500 group-hover:text-white/90 mt-1 truncate w-full text-center">{{ $showtime->cinemaHall->name }}</span>
                                                     </a>
+                                                    @endif
                                                 @endforeach
                                             </div>
-                                        </div>
-                                    @endforeach
+                                        @endforeach
+                                    </div>
                                 </div>
+                                @else
+                                    <div class="mt-6 p-4 bg-gray-800/30 rounded-lg text-center border border-gray-800 border-dashed">
+                                        <p class="text-gray-500 text-sm">No showtimes available.</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach

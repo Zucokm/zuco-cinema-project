@@ -275,4 +275,77 @@ class BookingController extends Controller
 
         return view('admin.pos', compact('movies'));
     }
+
+    public function scanner()
+    {
+        return view('admin.scanner');
+    }
+
+    public function verifyTicket(Request $request)
+    {
+        $request->validate([
+            'qr_code' => 'required|string'
+        ]);
+
+        $booking = \App\Models\Booking::where('booking_reference', $request->qr_code)
+            ->with(['user', 'showtime.movie', 'showtime.cinemaHall', 'tickets.seat'])
+            ->first();
+
+        if (!$booking) {
+            return response()->json(['status' => 'error', 'message' => 'Invalid Ticket! Booking not found.'], 404);
+        }
+
+        $responseData = [
+            'reference' => $booking->booking_reference,
+            'movie' => $booking->showtime->movie->title,
+            'customer' => $booking->user->name,
+            'seats' => $booking->tickets->map(fn($t) => $t->seat?->seat_code ?? 'N/A')->implode(', '),
+            'date' => \Carbon\Carbon::parse($booking->showtime->date)->format('d M Y'),
+            'time' => \Carbon\Carbon::parse($booking->showtime->start_time)->format('h:i A'),
+            'status' => $booking->status,
+        ];
+
+        // Check if the showtime is for today
+        if (\Carbon\Carbon::parse($booking->showtime->date)->notEqualTo(\Carbon\Carbon::today())) {
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Wrong Date! Ticket is for ' . \Carbon\Carbon::parse($booking->showtime->date)->format('d M'),
+                'data' => $responseData
+            ]);
+        }
+
+        // Check current status
+        if ($booking->status === 'checked-in') {
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Already Checked-in!',
+                'data' => $responseData
+            ]);
+        }
+
+        if ($booking->status === 'cancelled') {
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Ticket Cancelled!',
+                'data' => $responseData
+            ]);
+        }
+
+        if ($booking->status !== 'confirmed') {
+            return response()->json(['status' => 'error', 'message' => 'This ticket is not confirmed yet.'], 422);
+        }
+
+        // Update status to 'checked-in'
+        $booking->status = 'checked-in';
+        $booking->save();
+
+        // Update status in response data
+        $responseData['status'] = 'checked-in';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Check-in Successful!',
+            'data' => $responseData
+        ]);
+    }
 }

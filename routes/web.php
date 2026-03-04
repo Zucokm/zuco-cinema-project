@@ -80,6 +80,13 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
                   ->where('status', 'confirmed');
         })->count();
 
+        $todayCheckedIn = \App\Models\Ticket::whereHas('booking', function ($query) use ($today) {
+            $query->where('status', 'checked-in')
+                  ->whereHas('showtime', function ($q) use ($today) {
+                      $q->where('date', $today);
+                  });
+        })->count();
+
         $todaysBookings = \App\Models\Booking::whereDate('created_at', $today)
             ->where('status', 'confirmed')
             ->with(['user', 'showtime.movie', 'showtime.cinemaHall'])
@@ -112,7 +119,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
             ->pluck('count', 'movies.title')
             ->toArray();
 
-        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todaysBookings', 'chartData', 'ticketsPerMovie'));
+        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todayCheckedIn', 'todaysBookings', 'chartData', 'ticketsPerMovie'));
     })->name('dashboard');
 
     // Staff
@@ -140,6 +147,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Admin POS (Booking)
     Route::get('/pos', [BookingController::class, 'pos'])->name('pos');
+
+    // QR Scanner
+    Route::get('/scanner', [BookingController::class, 'scanner'])->name('scanner');
+    Route::post('/scanner/verify', [BookingController::class, 'verifyTicket'])->name('scanner.verify');
 });
 
 require __DIR__ . '/auth.php';

@@ -87,6 +87,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
                   });
         })->count();
 
+        $pendingPaymentsCount = \App\Models\Payment::where('status', 'pending')->count();
+
         $todaysBookings = \App\Models\Booking::whereDate('created_at', $today)
             ->where('status', 'confirmed')
             ->with(['user', 'showtime.movie', 'showtime.cinemaHall'])
@@ -119,7 +121,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
             ->pluck('count', 'movies.title')
             ->toArray();
 
-        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todayCheckedIn', 'todaysBookings', 'chartData', 'ticketsPerMovie'));
+        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todayCheckedIn', 'todaysBookings', 'chartData', 'ticketsPerMovie', 'pendingPaymentsCount'));
     })->name('dashboard');
 
     // Staff
@@ -151,6 +153,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     // QR Scanner
     Route::get('/scanner', [BookingController::class, 'scanner'])->name('scanner');
     Route::post('/scanner/verify', [BookingController::class, 'verifyTicket'])->name('scanner.verify');
+
+    // Payment Verification
+    Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments/{payment}/approve', [\App\Http\Controllers\Admin\PaymentController::class, 'approve'])->name('payments.approve');
+    Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('payments.reject');
 });
 
 require __DIR__ . '/auth.php';

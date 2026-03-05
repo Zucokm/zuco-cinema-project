@@ -20,7 +20,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-[#df1873]">
                     <div class="text-gray-500 dark:text-gray-400 text-sm font-bold uppercase mb-1">Today's Revenue</div>
                     <div class="text-3xl font-black text-gray-900 dark:text-white">{{ number_format($todayRevenue) }} Ks</div>
@@ -35,6 +35,16 @@
                     <div class="text-gray-500 dark:text-gray-400 text-sm font-bold uppercase mb-1">Checked-in Today</div>
                     <div class="text-3xl font-black text-gray-900 dark:text-white">{{ number_format($todayCheckedIn) }}</div>
                 </div>
+
+                <a href="{{ route('admin.payments.index') }}" class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 border-yellow-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition group">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="text-gray-500 dark:text-gray-400 text-sm font-bold uppercase mb-1">Pending Payments</div>
+                            <div class="text-3xl font-black text-yellow-600">{{ number_format($pendingPaymentsCount) }}</div>
+                        </div>
+                        <svg class="w-8 h-8 text-yellow-500 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </a>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

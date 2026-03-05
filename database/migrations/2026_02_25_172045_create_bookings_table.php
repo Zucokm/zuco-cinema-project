@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->string('booking_reference')->unique(); 
             $table->double('total_amount')->default(0); 
-            $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending'); 
+            $table->enum('status', ['pending', 'confirmed', 'cancelled', 'checked-in'])->default('pending'); 
 
             $table->timestamps();
         });

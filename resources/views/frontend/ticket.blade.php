@@ -26,6 +26,12 @@
                     CANCELLED
                 </span>
             </div>
+        @elseif($booking->payment && $booking->payment->status === 'pending')
+            <div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                <span class="text-yellow-600/40 text-3xl font-black -rotate-45 border-4 border-yellow-600/40 px-4 py-2 rounded-xl uppercase tracking-widest text-center leading-tight">
+                    PENDING<br>VERIFICATION
+                </span>
+            </div>
         @endif
 
         <!-- Header -->

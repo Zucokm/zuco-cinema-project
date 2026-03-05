@@ -14,14 +14,15 @@
     <div class="bg-[#0b1120] min-h-screen pb-20 pt-10">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="flex flex-col lg:flex-row gap-10">
+            <form action="{{ route('book.confirm', $showtime->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col lg:flex-row gap-10" x-data="{ paymentMethod: 'kpay' }">
+                @csrf
 
                 <div class="w-full lg:w-3/5 space-y-8">
                     <div>
                         <h2 class="text-2xl font-bold text-white mb-6">Payment Method</h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <label class="relative flex items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition group bg-gray-900/50">
-                                <input type="radio" name="payment_method" value="kpay" class="w-5 h-5 text-blue-600 bg-gray-800 border-gray-600 focus:ring-blue-500 focus:ring-2" checked>
+                                <input type="radio" name="payment_method" value="kpay" x-model="paymentMethod" class="w-5 h-5 text-blue-600 bg-gray-800 border-gray-600 focus:ring-blue-500 focus:ring-2">
                                 <div class="ml-4 flex flex-col">
                                     <span class="text-white font-bold text-lg">KBZ Pay</span>
                                     <span class="text-xs text-gray-500">Pay directly from KBZ app</span>
@@ -29,7 +30,7 @@
                             </label>
 
                             <label class="relative flex items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-yellow-500 transition group bg-gray-900/50">
-                                <input type="radio" name="payment_method" value="wavepay" class="w-5 h-5 text-yellow-500 bg-gray-800 border-gray-600 focus:ring-yellow-500 focus:ring-2">
+                                <input type="radio" name="payment_method" value="wavepay" x-model="paymentMethod" class="w-5 h-5 text-yellow-500 bg-gray-800 border-gray-600 focus:ring-yellow-500 focus:ring-2">
                                 <div class="ml-4 flex flex-col">
                                     <span class="text-white font-bold text-lg">Wave Pay</span>
                                     <span class="text-xs text-gray-500">Fast and secure transfer</span>
@@ -37,12 +38,22 @@
                             </label>
 
                             <label class="relative flex items-center p-4 border-2 border-gray-700 rounded-xl cursor-pointer hover:border-[#df1873] transition group bg-gray-900/50 md:col-span-2">
-                                <input type="radio" name="payment_method" value="card" class="w-5 h-5 text-[#df1873] bg-gray-800 border-gray-600 focus:ring-[#df1873] focus:ring-2">
+                                <input type="radio" name="payment_method" value="card" x-model="paymentMethod" class="w-5 h-5 text-[#df1873] bg-gray-800 border-gray-600 focus:ring-[#df1873] focus:ring-2">
                                 <div class="ml-4 flex flex-col">
                                     <span class="text-white font-bold text-lg">Credit / Debit Card</span>
                                     <span class="text-xs text-gray-500">Visa, Mastercard, JCB accepted</span>
                                 </div>
                             </label>
+                        </div>
+
+                        <!-- Screenshot Upload Section -->
+                        <div x-show="['kpay', 'wavepay'].includes(paymentMethod)" x-transition class="mt-6 bg-gray-900/50 border border-gray-800 rounded-xl p-5">
+                            <label class="block text-sm font-medium text-gray-400 mb-2">Upload Payment Screenshot <span class="text-red-500">*</span></label>
+                            <input type="file" name="payment_screenshot" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#df1873] file:text-white hover:file:bg-[#c21463] transition cursor-pointer bg-gray-800 rounded-lg border border-gray-700" accept="image/*">
+                            <p class="text-[10px] text-gray-500 mt-2">Please upload the transaction screenshot for verification.</p>
+                            @error('payment_screenshot')
+                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -51,11 +62,11 @@
                         <div class="bg-gray-900/50 border border-gray-800 rounded-xl p-5 space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
-                                <input type="email" value="{{ auth()->user()->email ?? '' }}" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 focus:ring-[#df1873] focus:border-[#df1873]" placeholder="Enter your email" required>
+                                <input type="email" name="email" value="{{ auth()->user()->email ?? '' }}" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 focus:ring-[#df1873] focus:border-[#df1873]" placeholder="Enter your email" required>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-400 mb-1">Phone Number</label>
-                                <input type="text" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 focus:ring-[#df1873] focus:border-[#df1873]" placeholder="e.g. 09123456789" required>
+                                <input type="text" name="phone" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 focus:ring-[#df1873] focus:border-[#df1873]" placeholder="e.g. 09123456789" required>
                                 <p class="text-[10px] text-gray-500 mt-1">We will send your e-ticket to this number via SMS.</p>
                             </div>
                         </div>
@@ -118,21 +129,18 @@
                             <span class="text-2xl font-black text-[#df1873]">{{ number_format($grandTotal) }} Ks</span>
                         </div>
 
-                        <form action="{{ route('book.confirm', $showtime->id) }}" method="POST">
-                            @csrf
-                            <button type="submit" class="w-full bg-[#df1873] hover:bg-[#c21463] text-white py-4 rounded-xl font-bold text-lg shadow-[0_4px_15px_rgba(223,24,115,0.4)] transition transform hover:-translate-y-1 active:scale-95 flex justify-center items-center gap-2">
-                                <span>Confirm Payment</span>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                            </button>
-                        </form>
+                        <button type="submit" class="w-full bg-[#df1873] hover:bg-[#c21463] text-white py-4 rounded-xl font-bold text-lg shadow-[0_4px_15px_rgba(223,24,115,0.4)] transition transform hover:-translate-y-1 active:scale-95 flex justify-center items-center gap-2">
+                            <span>Confirm Payment</span>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </button>
                         <p class="text-center text-[10px] text-gray-500 mt-4">By clicking confirm, you agree to our Terms & Conditions.</p>
 
                     </div>
                 </div>
 
-            </div>
+            </form>
         </div>
     </div>
 </x-app-layout>

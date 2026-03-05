@@ -119,9 +119,12 @@ class BookingController extends Controller
 
     public function myTickets()
     {
-        $bookings = \App\Models\Booking::where('user_id', auth()->id())
+        $bookings = \App\Models\Booking::where('bookings.user_id', auth()->id())
+            ->join('showtimes', 'bookings.showtime_id', '=', 'showtimes.id')
+            ->orderBy('showtimes.date', 'desc')
+            ->orderBy('showtimes.start_time', 'desc')
+            ->select('bookings.*')
             ->with(['showtime.movie', 'showtime.cinemaHall.cinema', 'tickets.seat', 'foodOrders.orderItems.foodItem'])
-            ->latest()
             ->get();
 
         return view('frontend.my_tickets', compact('bookings'));
@@ -130,6 +133,11 @@ class BookingController extends Controller
 
     public function confirmBooking(Request $request, Showtime $showtime)
     {
+        $request->validate([
+            'payment_method' => 'required|string',
+            'payment_screenshot' => 'required_if:payment_method,kpay,wavepay|image|max:2048', // 2MB Max
+        ]);
+
         $seatIds = session('booking_seats', []);
 
         if (empty($seatIds)) {
@@ -137,7 +145,7 @@ class BookingController extends Controller
         }
 
         try {
-            return DB::transaction(function () use ($seatIds, $showtime) {
+            return DB::transaction(function () use ($seatIds, $showtime, $request) {
                 // 1. Check for Double Booking (Race Condition Check)
                 // ဒီ Showtime အတွက် ရွေးထားတဲ့ခုံတွေက ရောင်းပြီးသား (သို့) Pending ဖြစ်နေပြီလား စစ်မယ်
                 $isTaken = Ticket::whereHas('booking', function ($query) use ($showtime) {
@@ -176,7 +184,7 @@ class BookingController extends Controller
                     'showtime_id' => $showtime->id,
                     'booking_reference' => 'ZUCO-' . strtoupper(uniqid()),
                     'total_amount' => $seatTotal + $foodTotal,
-                    'status' => 'confirmed',
+                    'status' => $request->hasFile('payment_screenshot') ? 'pending' : 'confirmed',
                 ]);
 
                 // 4. Create Tickets
@@ -207,6 +215,23 @@ class BookingController extends Controller
                     }
                 }
 
+                 // Handle Screenshot Upload
+                $screenshotPath = null;
+                if ($request->hasFile('payment_screenshot')) {
+                    $screenshotPath = $request->file('payment_screenshot')->store('payment_screenshots', 'public');
+                }
+
+                // 6. Create Payment Record
+                \App\Models\Payment::create([
+                    'booking_id' => $booking->id,
+                    'payment_method' => $request->payment_method,
+                    'amount' => $booking->total_amount,
+                    'status' => $screenshotPath ? 'pending' : 'success', // If screenshot uploaded, set to pending for admin review
+                    'paid_at' => now(),
+                    'transaction_id' => 'TXN-' . strtoupper(uniqid()),
+                    'screenshot_path' => $screenshotPath,
+                ]);
+
                 session()->forget(['booking_seats', 'booking_food']);
 
                 if (auth()->user()->role === 'admin') {
@@ -236,14 +261,27 @@ class BookingController extends Controller
 
         $showtimeStart = \Carbon\Carbon::parse($booking->showtime->date . ' ' . $booking->showtime->start_time);
         
-
-        if ($showtimeStart->subHour()->isPast()) {
-            return back()->with('error', 'You can only cancel bookings up to 1 hour before the showtime.');
+        // Logic Update:
+        // Confirmed ဖြစ်ပြီးသားဆိုရင် (၁) နာရီကြို Cancel ရမယ်
+        // Pending (ငွေမသွင်းရသေး/စစ်ဆေးဆဲ) ဆိုရင် ပွဲချိန်မတိုင်ခင်ထိ Cancel ခွင့်ပြုမယ်
+        if ($booking->status === 'confirmed') {
+            if ($showtimeStart->copy()->subHour()->isPast()) {
+                return back()->with('error', 'Confirmed bookings can only be cancelled up to 1 hour before showtime.');
+            }
+        } else {
+            if ($showtimeStart->isPast()) {
+                return back()->with('error', 'You cannot cancel a booking for a past showtime.');
+            }
         }
 
         $booking->update([
             'status' => 'cancelled'
         ]);
+
+        // Payment ရှိရင် Status ကို failed ပြောင်းမယ် (Admin ဆီမှာ Pending မပြတော့အောင်)
+        if ($booking->payment) {
+            $booking->payment->update(['status' => 'failed']);
+        }
 
         return back()->with('success', 'Booking cancelled successfully.');
     }
@@ -254,7 +292,7 @@ class BookingController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $booking->load(['showtime.movie', 'showtime.cinemaHall.cinema', 'tickets.seat', 'foodOrders.orderItems.foodItem']);
+        $booking->load(['payment', 'showtime.movie', 'showtime.cinemaHall.cinema', 'tickets.seat', 'foodOrders.orderItems.foodItem']);
 
         return view('frontend.ticket', compact('booking'));
     }
@@ -288,7 +326,7 @@ class BookingController extends Controller
         ]);
 
         $booking = \App\Models\Booking::where('booking_reference', $request->qr_code)
-            ->with(['user', 'showtime.movie', 'showtime.cinemaHall', 'tickets.seat'])
+            ->with(['user', 'showtime.movie', 'showtime.cinemaHall', 'tickets.seat', 'payment'])
             ->first();
 
         if (!$booking) {
@@ -327,6 +365,19 @@ class BookingController extends Controller
             return response()->json([
                 'status' => 'warning',
                 'message' => 'Ticket Cancelled!',
+                'data' => $responseData
+            ]);
+        }
+
+        // Check Payment Status (Pending Verification)
+        if ($booking->payment && $booking->payment->status === 'pending') {
+            // Add payment details for admin action
+            $responseData['payment_id'] = $booking->payment->id;
+            $responseData['screenshot_url'] = $booking->payment->screenshot_path ? asset('storage/' . $booking->payment->screenshot_path) : null;
+
+            return response()->json([
+                'status' => 'warning',
+                'message' => 'Payment Verification Pending!',
                 'data' => $responseData
             ]);
         }

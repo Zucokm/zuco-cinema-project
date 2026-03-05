@@ -1,32 +1,51 @@
 <x-app-layout>
-    <div class="bg-[#0a0a0a] min-h-screen py-12" x-data="{ tab: 'active' }">
+    <div class="bg-[#0a0a0a] min-h-screen py-12" x-data="{ tab: 'upcoming' }">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             
+            {{-- Success Message --}}
+            @if(session('success'))
+                <div x-data="{ show: true }" x-show="show" x-transition class="mb-8 bg-green-900/20 border border-green-500/50 text-green-400 px-6 py-4 rounded-2xl relative shadow-lg flex items-start gap-4" role="alert">
+                    <div class="bg-green-500/20 rounded-full p-2 shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div class="pt-1">
+                        <strong class="font-bold text-lg block text-white">Booking Successful!</strong>
+                        <span class="block text-sm opacity-90 mt-1">{{ session('success') }}</span>
+                    </div>
+                    <button @click="show = false" class="absolute top-4 right-4 text-green-400 hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            @endif
+
             <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
                 <h1 class="text-3xl font-extrabold text-white border-l-4 border-[#df1873] pl-4">My Tickets</h1>
                 
                 {{-- Tab Navigation --}}
                 <div class="flex bg-[#111] p-1 rounded-lg border border-gray-800 self-start md:self-auto">
-                    <button @click="tab = 'active'" 
-                        :class="tab === 'active' ? 'bg-gray-800 text-white shadow' : 'text-gray-400 hover:text-white'"
+                    <button @click="tab = 'upcoming'" 
+                        :class="tab === 'upcoming' ? 'bg-gray-800 text-white shadow' : 'text-gray-400 hover:text-white'"
                         class="px-4 py-2 rounded-md text-sm font-bold transition-all">
-                        Active Bookings
+                        Upcoming
                     </button>
-                    <button @click="tab = 'cancelled'" 
-                        :class="tab === 'cancelled' ? 'bg-gray-800 text-white shadow' : 'text-gray-400 hover:text-white'"
+                    <button @click="tab = 'past'" 
+                        :class="tab === 'past' ? 'bg-gray-800 text-white shadow' : 'text-gray-400 hover:text-white'"
                         class="px-4 py-2 rounded-md text-sm font-bold transition-all">
-                        Cancelled History
+                        Past & Cancelled
                     </button>
                 </div>
             </div>
 
-            {{-- Active Bookings Tab --}}
-            <div x-show="tab === 'active'" x-transition.opacity>
+            {{-- Upcoming Tab --}}
+            <div x-show="tab === 'upcoming'" x-transition.opacity>
                 @php
-                    $activeBookings = $bookings->filter(fn($b) => $b->status !== 'cancelled');
+                    $upcomingBookings = $bookings->filter(function($b) {
+                        $dt = \Carbon\Carbon::parse($b->showtime->date . ' ' . $b->showtime->start_time);
+                        return $dt->isFuture() && $b->status !== 'cancelled';
+                    });
                 @endphp
 
-                @if($activeBookings->isEmpty())
+                @if($upcomingBookings->isEmpty())
                 <div class="bg-[#111] rounded-2xl p-10 text-center border border-gray-800">
                     <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
                         <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,136 +60,36 @@
                 </div>
                 @else
                 <div class="space-y-6">
-                    @foreach($activeBookings as $booking)
-                        <div class="bg-[#111] rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all shadow-lg flex flex-col md:flex-row">
-                            
-                            {{-- Movie Poster --}}
-                            <div class="w-full md:w-48 h-64 md:h-auto relative shrink-0">
-                                @if($booking->showtime->movie->imagePath)
-                                    <img src="{{ asset('storage/' . $booking->showtime->movie->imagePath) }}" alt="Poster" class="w-full h-full object-cover">
-                                @else
-                                    <div class="w-full h-full bg-gray-800 flex items-center justify-center">
-                                        <span class="text-gray-600 text-xs">No Poster</span>
-                                    </div>
-                                @endif
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent md:hidden"></div>
-                                <div class="absolute bottom-4 left-4 md:hidden">
-                                    <span class="bg-[#df1873] text-white text-xs font-bold px-2 py-1 rounded">
-                                        {{ $booking->status }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {{-- Ticket Details --}}
-                            <div class="p-6 flex-1 flex flex-col justify-between">
-                                <div>
-                                    <div class="flex justify-between items-start mb-4">
-                                        <div>
-                                            <h2 class="text-2xl font-bold text-white mb-1">{{ $booking->showtime->movie->title }}</h2>
-                                            <p class="text-gray-400 text-sm flex items-center gap-2">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                                {{ $booking->showtime->cinemaHall->cinema->name }} &bull; {{ $booking->showtime->cinemaHall->name }}
-                                            </p>
-                                        </div>
-                                        <div class="text-right hidden md:block">
-                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider 
-                                                {{ $booking->status === 'confirmed' ? 'bg-green-900/30 text-green-400 border border-green-800' : ($booking->status === 'cancelled' ? 'bg-red-900/30 text-red-400 border border-red-800' : 'bg-yellow-900/30 text-yellow-400 border border-yellow-800') }}">
-                                                {{ $booking->status }}
-                                            </span>
-                                            <p class="text-gray-500 text-[10px] mt-2 font-mono">REF: {{ $booking->booking_reference }}</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-6 mb-6">
-                                        <div>
-                                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Date & Time</p>
-                                            <p class="text-white font-medium">
-                                                {{ \Carbon\Carbon::parse($booking->showtime->date)->format('D, d M Y') }}
-                                                <br>
-                                                <span class="text-[#df1873]">{{ \Carbon\Carbon::parse($booking->showtime->start_time)->format('h:i A') }}</span>
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs text-gray-500 uppercase font-bold mb-1">Seats ({{ $booking->tickets->count() }})</p>
-                                            <div class="flex flex-wrap gap-1">
-                                                @foreach($booking->tickets as $ticket)
-                                                    <span class="bg-gray-800 text-gray-300 text-xs px-2 py-1 rounded border border-gray-700 font-bold">{{ $ticket->seat->seat_code }}</span>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    @if($booking->foodOrders->isNotEmpty())
-                                        <div class="border-t border-gray-800 pt-4 mt-4">
-                                            <p class="text-xs text-gray-500 uppercase font-bold mb-2">Snacks & Drinks</p>
-                                            <ul class="text-sm text-gray-300 space-y-1">
-                                                @foreach($booking->foodOrders as $order)
-                                                    @foreach($order->orderItems as $item)
-                                                        <li class="flex justify-between w-full md:w-1/2">
-                                                            <span>{{ $item->quantity }}x {{ $item->foodItem->name }}</span>
-                                                        </li>
-                                                    @endforeach
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
-                                </div>
-
-                                <div class="flex justify-between items-end mt-6 pt-4 border-t border-gray-800 border-dashed">
-                                    <div class="flex flex-col gap-2">
-                                        <div class="md:hidden">
-                                            <p class="text-gray-500 text-[10px] font-mono">REF: {{ $booking->booking_reference }}</p>
-                                        </div>
-
-                                        @php
-                                            $showtimeDate = \Carbon\Carbon::parse($booking->showtime->date . ' ' . $booking->showtime->start_time);
-                                            $isCancellable = $booking->status !== 'cancelled' && $showtimeDate->isFuture();
-                                        @endphp
-
-                                        <a href="{{ route('booking.ticket', $booking->id) }}" target="_blank" class="text-center text-white hover:text-[#df1873] text-xs font-bold border border-gray-600 bg-gray-800 px-3 py-1.5 rounded transition-colors hover:border-[#df1873]">
-                                            View Ticket
-                                        </a>
-
-                                        @if($isCancellable)
-                                            <form action="{{ route('booking.cancel', $booking->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking? This action cannot be undone.');">
-                                                @csrf
-                                                <button type="submit" class="text-red-500 hover:text-red-400 text-xs font-bold border border-red-900 bg-red-900/10 px-3 py-1.5 rounded transition-colors hover:bg-red-900/20">
-                                                    Cancel Booking
-                                                </button>
-                                            </form>
-                                        @endif
-                                    </div>
-                                    <div class="text-right ml-auto">
-                                        <p class="text-xs text-gray-500 mb-1">Total Amount</p>
-                                        <p class="text-xl font-black text-[#df1873]">{{ number_format($booking->total_amount) }} Ks</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    @foreach($upcomingBookings as $booking)
+                        <x-ticket-card :booking="$booking" />
                     @endforeach
                 </div>
                 @endif
             </div>
 
-            {{-- Cancelled Bookings Tab --}}
-            <div x-show="tab === 'cancelled'" style="display: none;" x-transition.opacity>
+            {{-- Past Tab --}}
+            <div x-show="tab === 'past'" style="display: none;" x-transition.opacity>
                 @php
-                    $cancelledBookings = $bookings->filter(fn($b) => $b->status === 'cancelled');
+                    $pastBookings = $bookings->filter(function($b) {
+                        $dt = \Carbon\Carbon::parse($b->showtime->date . ' ' . $b->showtime->start_time);
+                        return $dt->isPast() || $b->status === 'cancelled';
+                    });
                 @endphp
 
-                @if($cancelledBookings->isEmpty())
+                @if($pastBookings->isEmpty())
                     <div class="bg-[#111] rounded-2xl p-10 text-center border border-gray-800">
                         <div class="w-20 h-20 bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-6">
                             <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
                         </div>
-                        <h3 class="text-xl font-bold text-white mb-2">No Cancelled Tickets</h3>
-                        <p class="text-gray-500">You haven't cancelled any bookings.</p>
+                        <h3 class="text-xl font-bold text-white mb-2">No Past Tickets</h3>
+                        <p class="text-gray-500">You don't have any past or cancelled bookings.</p>
                     </div>
                 @else
                     <div class="space-y-6">
-                        @foreach($cancelledBookings as $booking)
+                        @foreach($pastBookings as $booking)
+                            @if($booking->status === 'cancelled')
                             <div class="bg-[#111] rounded-2xl overflow-hidden border border-gray-800 opacity-75 hover:opacity-100 transition-all shadow-lg flex flex-col md:flex-row grayscale-[50%] hover:grayscale-0">
                                 
                                 {{-- Movie Poster --}}
@@ -242,6 +161,9 @@
                                     </div>
                                 </div>
                             </div>
+                            @else
+                                <x-ticket-card :booking="$booking" />
+                            @endif
                         @endforeach
                     </div>
                 @endif

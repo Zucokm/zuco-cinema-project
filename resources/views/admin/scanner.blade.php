@@ -50,6 +50,15 @@
                             <div class="flex justify-between items-center"><span class="text-gray-500 text-xs">Date</span> <span class="text-white font-bold text-sm text-right" id="res-date"></span></div>
                             <div class="flex justify-between items-center"><span class="text-gray-500 text-xs">Status</span> <span class="font-bold text-xs px-2 py-1 rounded uppercase" id="res-status"></span></div>
                         </div>
+
+                        <!-- Payment Actions (Hidden by default) -->
+                        <div id="payment-actions" class="hidden mt-4 pt-4 border-t border-gray-800 w-full">
+                            <p class="text-yellow-500 text-xs font-bold mb-2 text-center">Action Required</p>
+                            <div class="flex gap-2">
+                                <a id="view-screenshot-btn" href="#" target="_blank" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg text-sm font-bold transition">View Screenshot</a>
+                                <button id="approve-payment-btn" type="button" class="flex-1 bg-green-600 hover:bg-green-500 text-white py-2 rounded-lg text-sm font-bold transition">Approve Now</button>
+                            </div>
+                        </div>
                         
                         <button onclick="resetScanner()" class="mt-6 w-full bg-gray-800 hover:bg-gray-700 text-white py-3 rounded-xl font-bold transition">Scan Next</button>
                     </div>
@@ -119,6 +128,7 @@
             isScanning = true;
             document.getElementById('success-state').classList.add('hidden');
             document.getElementById('error-state').classList.add('hidden');
+            document.getElementById('payment-actions').classList.add('hidden');
             document.getElementById('default-state').classList.remove('hidden');
             // Reset styles
             showResult('success', 'Valid Ticket', null);
@@ -178,9 +188,59 @@
                 } else {
                     statusEl.classList.add('bg-gray-800', 'text-white', 'border-gray-700');
                 }
+
+                // Handle Payment Actions
+                const paymentActions = document.getElementById('payment-actions');
+                if (data.payment_id) {
+                    paymentActions.classList.remove('hidden');
+                    
+                    const viewBtn = document.getElementById('view-screenshot-btn');
+                    if (data.screenshot_url) {
+                        viewBtn.href = data.screenshot_url;
+                        viewBtn.classList.remove('hidden');
+                    } else {
+                        viewBtn.classList.add('hidden');
+                    }
+
+                    const approveBtn = document.getElementById('approve-payment-btn');
+                    approveBtn.onclick = function() { approvePayment(data.payment_id, data.reference); };
+                } else {
+                    paymentActions.classList.add('hidden');
+                }
             }
 
             successContainer.classList.remove('hidden');
+        }
+
+        function approvePayment(id, reference) {
+            if(!confirm('Are you sure you want to approve this payment?')) return;
+
+            const approveBtn = document.getElementById('approve-payment-btn');
+            const originalText = approveBtn.innerText;
+            approveBtn.innerText = 'Processing...';
+            approveBtn.disabled = true;
+
+            fetch(`/admin/payments/${id}/approve`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    // Automatically check-in by re-verifying the ticket
+                    isScanning = true;
+                    onScanSuccess(reference, null);
+                }
+            })
+            .catch(err => {
+                alert('Error approving payment');
+                approveBtn.innerText = originalText;
+                approveBtn.disabled = false;
+            });
         }
 
         function handleManualEntry() {

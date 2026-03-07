@@ -7,9 +7,9 @@
 
         <div class="absolute inset-0 z-0 overflow-hidden">
             @if($movie->bgImagePath)
-            <img src="{{ asset('storage/' . $movie->bgImagePath) }}" alt="{{ $movie->title }} background" class="w-full h-full object-cover opacity-60">
+            <img src="{{ str_starts_with($movie->bgImagePath, 'http') ? $movie->bgImagePath : asset('storage/' . $movie->bgImagePath) }}" alt="{{ $movie->title }} background" class="w-full h-full object-cover opacity-60">
             @else
-            <img src="{{ asset('storage/' . $movie->imagePath) }}" alt="background" class="w-full h-full object-cover opacity-30 blur-md scale-110">
+            <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="background" class="w-full h-full object-cover opacity-30 blur-md scale-110">
             @endif
 
             <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent"></div>
@@ -21,7 +21,7 @@
 
                 <div class="w-64 shrink-0 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-gray-800">
                     @if($movie->imagePath)
-                    <img src="{{ asset('storage/' . $movie->imagePath) }}" alt="{{ $movie->title }}" class="w-full aspect-[2/3] object-cover">
+                    <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="{{ $movie->title }}" class="w-full aspect-[2/3] object-cover">
                     @endif
 
                     @if($movie->trailerLink)

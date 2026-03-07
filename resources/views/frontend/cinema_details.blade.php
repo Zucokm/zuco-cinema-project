@@ -48,7 +48,7 @@
                         <div class="bg-[#111] rounded-2xl p-6 border border-gray-800 flex flex-col md:flex-row gap-8 shadow-lg hover:border-gray-700 transition-colors">
                             <div class="w-full md:w-48 shrink-0">
                                 @if($movie->imagePath)
-                                    <img src="{{ asset('storage/' . $movie->imagePath) }}" class="rounded-lg w-full shadow-lg object-cover aspect-[2/3]">
+                                    <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" class="rounded-lg w-full shadow-lg object-cover aspect-[2/3]">
                                 @else
                                     <div class="w-full aspect-[2/3] bg-gray-800 rounded-lg flex items-center justify-center text-gray-600">No Image</div>
                                 @endif

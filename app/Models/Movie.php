@@ -23,6 +23,7 @@ class Movie extends Model
         'language',
         'likeCount'
     ];
+    
 
     public function showtimes()
     {

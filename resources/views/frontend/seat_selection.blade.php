@@ -23,15 +23,19 @@
                 @foreach($seatsByRow as $row => $seats)
                 @php
                     // Define styles map at the top of the loop or in a View Composer
+                    // Using Names instead of IDs for better readability and flexibility
                     $seatStyles = [
-                        1 => [ // VIP
+                        'VIP' => [ 
                             'base' => 'w-10 h-10 bg-yellow-400 text-black border-yellow-600 hover:bg-yellow-300',
                         ],
-                        4 => [ // Couple
+                        'Couple' => [ 
                             'base' => 'w-[80px] h-10 bg-pink-500 text-white border-pink-700 hover:bg-pink-400',
                         ],
-                        3 => [ // Good
+                        'Good' => [ 
                             'base' => 'w-10 h-10 bg-green-500 text-white border-green-700 hover:bg-green-400',
+                        ],
+                        'Premium' => [ 
+                            'base' => 'w-10 h-10 bg-red-500 text-white border-red-700 hover:bg-red-400',
                         ],
                         'default' => [ // Standard
                             'base' => 'w-10 h-10 bg-blue-600 text-white border-blue-800 hover:bg-blue-500',
@@ -46,16 +50,16 @@
                         @php
                         $isBooked = in_array($seat->id, $bookedSeatIds);
 
-                        // FIX: Check the seat_type_id directly from the seats table
-                        // ID 1 = VIP, ID 2 = Standard, ID 3 = Good, ID 4 = Couple
-                        $typeId = $seat->seat_type_id;
+                        // Get Seat Type Name safely
+                        $typeName = $seat->seatType->name ?? 'Standard';
 
                         // Default price fallback if relationship fails
                         $seatPrice = $seat->seatType ? $seat->seatType->price : 5000;
 
-                        $style = $seatStyles[$typeId] ?? $seatStyles['default'];
+                        $style = $seatStyles[$typeName] ?? $seatStyles['default'];
                         $baseClass = $style['base'];
-                        $selectedClass = str_replace(['w-10', 'w-[80px]'], '', $baseClass) . ' ' . ($typeId == 4 ? 'w-[80px]' : 'w-10') . ' h-10 bg-[#df1873] border-[#a81055] text-white scale-110 shadow-[0_0_15px_rgba(223,24,115,0.8)] z-10';
+                        $widthClass = ($typeName == 'Couple') ? 'w-[80px]' : 'w-10';
+                        $selectedClass = str_replace(['w-10', 'w-[80px]'], '', $baseClass) . ' ' . $widthClass . ' h-10 bg-[#df1873] border-[#a81055] text-white scale-110 shadow-[0_0_15px_rgba(223,24,115,0.8)] z-10';
 
                         if ($isBooked) {
                             $baseClass = 'w-10 h-10 bg-gray-700 text-gray-400 opacity-50 cursor-not-allowed border-gray-900';
@@ -95,6 +99,10 @@
                 <div class="flex items-center gap-2">
                     <div class="w-6 h-6 bg-green-500 rounded-t border-b-[3px] border-green-700"></div>
                     <span class="text-sm text-gray-300">Good</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 bg-red-500 rounded-t border-b-[3px] border-red-700"></div>
+                    <span class="text-sm text-gray-300">Premium</span>
                 </div>
                 <div class="flex items-center gap-2">
                     <div class="w-6 h-6 bg-yellow-400 rounded-t border-b-[3px] border-yellow-600"></div>

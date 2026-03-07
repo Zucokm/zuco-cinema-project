@@ -47,10 +47,45 @@
                 </a>
             </div>
 
+            {{-- Date Range Filter --}}
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700" x-data="{ mode: '{{ request('filter_month') ? 'month' : 'custom' }}' }">
+                <div class="flex flex-wrap gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Filter Type</label>
+                        <select x-model="mode" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-[#df1873] focus:border-[#df1873]">
+                            <option value="custom">Custom Range</option>
+                            <option value="month">Specific Month</option>
+                        </select>
+                    </div>
+
+                    <template x-if="mode === 'custom'">
+                        <div class="flex gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Start Date</label>
+                                <input type="date" name="start_date" value="{{ $startDate }}" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-[#df1873] focus:border-[#df1873]">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">End Date</label>
+                                <input type="date" name="end_date" value="{{ $endDate }}" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-[#df1873] focus:border-[#df1873]">
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="mode === 'month'">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Select Month</label>
+                            <input type="month" name="filter_month" value="{{ request('filter_month', \Carbon\Carbon::now()->format('Y-m')) }}" class="rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm focus:ring-[#df1873] focus:border-[#df1873]">
+                        </div>
+                    </template>
+
+                    <button type="submit" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-bold transition shadow-sm h-[38px]">Filter</button>
+                </div>
+            </form>
+
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Monthly Revenue ({{ date('Y') }})</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-gray-100">Revenue Analytics</h3>
                     <div class="relative h-72 w-full">
                         <canvas id="revenueChart"></canvas>
                     </div>
@@ -128,6 +163,9 @@
                     </div>
             </div>
 
+            
+
+
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h3 class="text-lg font-bold mb-4">Today's Bookings</h3>
@@ -143,6 +181,7 @@
                                         <th class="px-4 py-3">User</th>
                                         <th class="px-4 py-3">Movie</th>
                                         <th class="px-4 py-3">Time</th>
+                                        <th class="px-4 py-3">Status</th>
                                         <th class="px-4 py-3 text-right">Amount</th>
                                     </tr>
                                 </thead>
@@ -156,11 +195,19 @@
                                             {{ \Carbon\Carbon::parse($booking->showtime->start_time)->format('h:i A') }}
                                             <span class="text-xs text-gray-500 block">{{ $booking->showtime->cinemaHall->name }}</span>
                                         </td>
+                                        <td class="px-4 py-3">
+                                            <span class="px-2 py-1 text-xs rounded-full font-bold {{ $booking->status === 'checked-in' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800' }}">
+                                                {{ ucfirst($booking->status) }}
+                                            </span>
+                                        </td>
                                         <td class="px-4 py-3 text-right font-bold">{{ number_format($booking->total_amount) }} Ks</td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-4">
+                            {{ $todaysBookings->links() }}
                         </div>
                     @endif
                 </div>
@@ -176,7 +223,7 @@
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                labels: @json($chartLabels),
                 datasets: [{
                     label: 'Revenue (Ks)',
                     data: @json($chartData),
@@ -275,4 +322,6 @@
             }
         });
     </script>
+
+
 </x-app-layout>

@@ -68,7 +68,11 @@
                                             w-16 bg-pink-500 /* Couple  */
                                         @elseif($seat->seatType->name == 'VIP') 
                                             w-8 bg-yellow-500 /* VIP  */
-                                        @else 
+                                        @elseif ($seat->seatType->name == 'Premium')
+                                            w-8 bg-red-500 /* Premium  */
+                                        @elseif($seat->seatType->name == 'Good') 
+                                            w-8 bg-green-500 /* Good  */
+                                      @else 
                                             w-8 bg-indigo-500 /* Standard  */
                                     @endif">
 

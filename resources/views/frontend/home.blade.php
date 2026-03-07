@@ -31,7 +31,7 @@
                     <a href="{{ route('movie.details', $movie->id) }}" class="group block">
                         <div class="rounded-xl overflow-hidden aspect-[2/3] mb-4 relative shadow-lg border border-gray-800 group-hover:border-indigo-500/50 transition-colors duration-300">
                             @if($movie->imagePath)
-                            <img src="{{ asset('storage/' . $movie->imagePath) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out">
+                            <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="{{ $movie->title }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out">
                             @else
                             <div class="w-full h-full bg-[#111] flex flex-col items-center justify-center text-gray-600 p-4 text-center">
                                 <svg class="w-8 h-8 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">

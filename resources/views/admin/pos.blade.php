@@ -45,8 +45,19 @@
             @endif
 
             <div class="mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-                <form action="{{ route('admin.pos') }}" method="GET" class="flex gap-4">
-                    <div class="relative w-full md:w-1/2">
+                <form action="{{ route('admin.pos') }}" method="GET" class="flex flex-col md:flex-row gap-4">
+                    <div class="w-full md:w-1/5">
+                        <input type="date" name="date" value="{{ $selectedDate }}" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#df1873] dark:text-white transition shadow-sm">
+                    </div>
+                    <div class="w-full md:w-1/5">
+                        <select name="cinema_id" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#df1873] dark:text-white transition shadow-sm">
+                            <option value="">All Cinemas</option>
+                            @foreach($cinemas as $cinema)
+                                <option value="{{ $cinema->id }}" {{ $selectedCinema == $cinema->id ? 'selected' : '' }}>{{ $cinema->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="relative w-full md:w-2/5">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -55,7 +66,7 @@
                         <input type="text" name="search" value="{{ request('search') }}" placeholder="Search movies..." class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#df1873] dark:text-white transition">
                     </div>
                     <button type="submit" class="bg-[#df1873] hover:bg-[#c21463] text-white px-8 py-3 rounded-lg font-bold transition shadow-md hover:shadow-lg">Search</button>
-                    @if(request('search'))
+                    @if(request('search') || request('cinema_id') || request('date') != \Carbon\Carbon::today()->format('Y-m-d'))
                         <a href="{{ route('admin.pos') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-bold transition shadow-md flex items-center">Clear</a>
                     @endif
                 </form>
@@ -66,7 +77,7 @@
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col h-full border border-gray-100 dark:border-gray-700">
                     <div class="relative h-64 overflow-hidden group">
                         @if($movie->imagePath)
-                            <img src="{{ asset('storage/' . $movie->imagePath) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
                         @else
                             <div class="w-full h-full bg-gray-700 flex items-center justify-center text-gray-400 flex-col gap-2">
                                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -121,6 +132,10 @@
                     <p class="text-sm mt-2">Try adjusting your search or add new showtimes.</p>
                 </div>
             @endif
+
+            <div class="mt-8">
+                {{ $movies->links() }}
+            </div>
 
         </div>
     </div>

@@ -14,6 +14,37 @@
                     <p>{{ session('success') }}</p>
                 </div>
             @endif
+            
+            <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+                <nav class="-mb-px flex space-x-8">
+                    <a href="{{ route('admin.payments.index', ['status' => 'pending']) }}"
+                       class="{{ $status === 'pending' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Pending Verification
+                    </a>
+                    <a href="{{ route('admin.payments.index', ['status' => 'history']) }}"
+                       class="{{ $status === 'history' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Payment History
+                    </a>
+                </nav>
+            </div>
+
+            <div class="mb-4 flex flex-col md:flex-row justify-between items-end gap-4">
+                <form action="{{ route('admin.payments.index') }}" method="GET" class="w-full md:w-auto">
+                    <input type="hidden" name="status" value="{{ $status }}">
+                    <label for="date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {{ $status === 'history' ? 'Filter by Payment Date:' : 'Filter by Show Date:' }}
+                    </label>
+                    <div class="flex gap-2 mt-1">
+                        <input type="date" name="date" id="date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" value="{{ request('date') }}">
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-indigo-700 dark:hover:bg-indigo-600">Filter</button>
+                    </div>
+                </form>
+
+                <a href="{{ route('admin.payments.export', request()->query()) }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-sm flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    Export CSV
+                </a>
+            </div>
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
@@ -21,7 +52,7 @@
                     @if($payments->isEmpty())
                         <div class="text-center py-10 text-gray-500">
                             <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            <p class="text-lg">No pending payments to verify.</p>
+                            <p class="text-lg">No payments found.</p>
                         </div>
                     @else
                         <div class="overflow-x-auto">
@@ -33,7 +64,7 @@
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Amount</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Method</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Screenshot</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{{ $status === 'history' ? 'Status' : 'Actions' }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -41,7 +72,12 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="font-mono text-[#df1873] font-bold">{{ $payment->booking->booking_reference }}</span>
-                                            <div class="text-xs text-gray-500 mt-1">{{ $payment->booking->showtime->movie->title }}</div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                {{ $payment->booking->showtime->movie->title }}
+                                                <div class="text-gray-400 mt-0.5">
+                                                    {{ \Carbon\Carbon::parse($payment->booking->showtime->date)->format('d M') }} • {{ \Carbon\Carbon::parse($payment->booking->showtime->start_time)->format('h:i A') }}
+                                                </div>
+                                            </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $payment->booking->user->name }}</div>
@@ -81,6 +117,7 @@
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            @if($status === 'pending')
                                             <div class="flex justify-end gap-2">
                                                 <form action="{{ route('admin.payments.approve', $payment->id) }}" method="POST">
                                                     @csrf
@@ -95,11 +132,19 @@
                                                     </button>
                                                 </form>
                                             </div>
+                                            @else
+                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $payment->status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                                    {{ $payment->status === 'success' ? 'Approved' : 'Rejected' }}
+                                                </span>
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="mt-4">
+                            {{ $payments->links() }}
                         </div>
                     @endif
 

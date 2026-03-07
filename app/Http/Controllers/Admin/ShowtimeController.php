@@ -11,16 +11,36 @@ use Carbon\Carbon;
 
 class ShowtimeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $query = Showtime::with(['movie', 'cinemaHall.cinema']);
 
-        $showtimesByDate = \App\Models\Showtime::with(['movie', 'cinemaHall.cinema'])
-            ->orderBy('date', 'desc')
+        // 1. Filter by Date
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+
+        // 2. Filter by Movie
+        if ($request->filled('movie_id')) {
+            $query->where('movie_id', $request->movie_id);
+        }
+
+        // 3. Filter by Cinema
+        if ($request->filled('cinema_id')) {
+            $query->whereHas('cinemaHall', function ($q) use ($request) {
+                $q->where('cinema_id', $request->cinema_id);
+            });
+        }
+
+        $showtimes = $query->orderBy('date', 'desc')
             ->orderBy('start_time', 'asc')
-            ->get()
-            ->groupBy('date');
+            ->paginate(20)
+            ->withQueryString(); // Pagination နှိပ်ရင် Filter မပျောက်အောင်
 
-        return view('admin.showtimes.index', compact('showtimesByDate'));
+        $movies = Movie::select('id', 'title')->orderBy('title')->get();
+        $cinemas = \App\Models\Cinema::select('id', 'name')->orderBy('name')->get();
+
+        return view('admin.showtimes.index', compact('showtimes', 'movies', 'cinemas'));
     }
 
     public function edit(\App\Models\Showtime $showtime)
@@ -42,7 +62,7 @@ class ShowtimeController extends Controller
 
         $movie = Movie::findOrFail($request->movie_id);
 
-      
+
         $startTime = Carbon::createFromFormat('H:i', $request->start_time);
         $endTime = $startTime->copy()->addMinutes($movie->duration);
 

@@ -299,19 +299,38 @@ class BookingController extends Controller
 
     public function pos(Request $request)
     {
-        $query = \App\Models\Movie::whereHas('showtimes', function($q) {
-            $q->where('date', '>=', \Carbon\Carbon::today());
+        // Default အနေနဲ့ ဒီနေ့ရက်စွဲကို ယူမယ်၊ ရွေးထားရင် ရွေးထားတဲ့ရက်ကို ယူမယ်
+        $selectedDate = $request->input('date', \Carbon\Carbon::today()->format('Y-m-d'));
+        $selectedCinema = $request->input('cinema_id');
+
+        $query = \App\Models\Movie::whereHas('showtimes', function($q) use ($selectedDate, $selectedCinema) {
+            $q->whereDate('date', $selectedDate);
+            if ($selectedCinema) {
+                $q->whereHas('cinemaHall', function($h) use ($selectedCinema) {
+                    $h->where('cinema_id', $selectedCinema);
+                });
+            }
         });
 
         if ($request->has('search') && $request->search != '') {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $movies = $query->with(['showtimes' => function($q) {
-            $q->where('date', '>=', \Carbon\Carbon::today())->orderBy('date')->orderBy('start_time');
-        }, 'showtimes.cinemaHall.cinema'])->get();
+        // ရွေးထားတဲ့ရက်အတွက် Showtime တွေကိုပဲ Eager Load လုပ်မယ် (Performance ပိုကောင်းစေတယ်)
+        $movies = $query->with(['showtimes' => function($q) use ($selectedDate, $selectedCinema) {
+            $q->whereDate('date', $selectedDate)->orderBy('start_time');
+            if ($selectedCinema) {
+                $q->whereHas('cinemaHall', function($h) use ($selectedCinema) {
+                    $h->where('cinema_id', $selectedCinema);
+                });
+            }
+        }, 'showtimes.cinemaHall.cinema'])
+        ->paginate(8) // တစ်မျက်နှာမှာ ၈ ကားပဲ ပြမယ် (Data များနေလို့ လျှော့လိုက်သည်)
+        ->withQueryString();
 
-        return view('admin.pos', compact('movies'));
+        $cinemas = \App\Models\Cinema::select('id', 'name')->get();
+
+        return view('admin.pos', compact('movies', 'selectedDate', 'cinemas', 'selectedCinema'));
     }
 
     public function scanner()

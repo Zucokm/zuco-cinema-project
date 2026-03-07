@@ -95,7 +95,8 @@
                                 {{-- Movie Poster --}}
                                 <div class="w-full md:w-48 h-64 md:h-auto relative shrink-0">
                                     @if($booking->showtime->movie->imagePath)
-                                        <img src="{{ asset('storage/' . $booking->showtime->movie->imagePath) }}" alt="Poster" class="w-full h-full object-cover">
+                                        {{-- ဒီနေရာလေးကို ပြင်လိုက်တာပါ --}}
+                                        <img src="{{ str_starts_with($booking->showtime->movie->imagePath, 'http') ? $booking->showtime->movie->imagePath : asset('storage/' . $booking->showtime->movie->imagePath) }}" alt="Poster" class="w-full h-full object-cover">
                                     @else
                                         <div class="w-full h-full bg-gray-800 flex items-center justify-center">
                                             <span class="text-gray-600 text-xs">No Poster</span>

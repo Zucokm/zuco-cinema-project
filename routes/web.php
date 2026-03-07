@@ -68,8 +68,22 @@ Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
 
     // Dashboard
-    Route::get('/dashboard', function () {
+    Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
         $today = \Carbon\Carbon::today();
+        
+        // Date Range Filter
+        if ($request->filled('filter_month')) {
+            $month = \Carbon\Carbon::parse($request->filter_month);
+            $start = $month->copy()->startOfMonth();
+            $end = $month->copy()->endOfMonth();
+            $startDate = $start->format('Y-m-d');
+            $endDate = $end->format('Y-m-d');
+        } else {
+            $startDate = $request->input('start_date', \Carbon\Carbon::now()->startOfYear()->format('Y-m-d'));
+            $endDate = $request->input('end_date', \Carbon\Carbon::now()->format('Y-m-d'));
+            $start = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $end = \Carbon\Carbon::parse($endDate)->endOfDay();
+        }
 
         $todayRevenue = \App\Models\Booking::whereDate('created_at', $today)
             ->where('status', 'confirmed')
@@ -90,28 +104,53 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         $pendingPaymentsCount = \App\Models\Payment::where('status', 'pending')->count();
 
         $todaysBookings = \App\Models\Booking::whereDate('created_at', $today)
-            ->where('status', 'confirmed')
+            ->whereIn('status', ['confirmed', 'checked-in'])
             ->with(['user', 'showtime.movie', 'showtime.cinemaHall'])
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        // Monthly Revenue for Chart
-        $monthlyStats = \App\Models\Booking::selectRaw('SUM(total_amount) as total, MONTH(created_at) as month')
-            ->whereYear('created_at', date('Y'))
-            ->where('status', 'confirmed')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->pluck('total', 'month')
-            ->toArray();
-
+        // --- Revenue Chart Logic ---
+        $diffInDays = $start->diffInDays($end);
+        $chartLabels = [];
         $chartData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $chartData[] = $monthlyStats[$i] ?? 0;
+
+        if ($diffInDays <= 60) { // ရက် ၆၀ အောက်ဆိုရင် နေ့အလိုက်ပြမယ်
+            $revenueStats = \App\Models\Booking::selectRaw('SUM(total_amount) as total, DATE(created_at) as date')
+                ->whereBetween('created_at', [$start, $end])
+                ->where('status', 'confirmed')
+                ->groupBy('date')
+                ->pluck('total', 'date')
+                ->toArray();
+            
+            $period = \Carbon\CarbonPeriod::create($start, $end);
+            foreach ($period as $date) {
+                $dateString = $date->format('Y-m-d');
+                $chartLabels[] = $date->format('d M');
+                $chartData[] = $revenueStats[$dateString] ?? 0;
+            }
+        } else { // ရက် ၆၀ ထက်များရင် လအလိုက်ပြမယ်
+            $revenueStats = \App\Models\Booking::selectRaw('SUM(total_amount) as total, DATE_FORMAT(created_at, "%Y-%m") as month_year')
+                ->whereBetween('created_at', [$start, $end])
+                ->where('status', 'confirmed')
+                ->groupBy('month_year')
+                ->pluck('total', 'month_year')
+                ->toArray();
+
+            $current = $start->copy()->startOfMonth();
+            $endMonth = $end->copy()->endOfMonth();
+            
+            while ($current <= $endMonth) {
+                $key = $current->format('Y-m');
+                $chartLabels[] = $current->format('M Y');
+                $chartData[] = $revenueStats[$key] ?? 0;
+                $current->addMonth();
+            }
         }
 
-        // Tickets per Movie for Pie Chart
-        $ticketsPerMovie = \App\Models\Ticket::whereHas('booking', function ($q) {
-                $q->where('status', 'confirmed');
+        // --- Tickets Pie Chart Logic (Filtered) ---
+        $ticketsPerMovie = \App\Models\Ticket::whereHas('booking', function ($q) use ($start, $end) {
+                $q->where('status', 'confirmed')
+                  ->whereBetween('created_at', [$start, $end]);
             })
             ->join('bookings', 'tickets.booking_id', '=', 'bookings.id')
             ->join('showtimes', 'bookings.showtime_id', '=', 'showtimes.id')
@@ -121,7 +160,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
             ->pluck('count', 'movies.title')
             ->toArray();
 
-        return view('admin.dashboard', compact('todayRevenue', 'todayTickets', 'todayCheckedIn', 'todaysBookings', 'chartData', 'ticketsPerMovie', 'pendingPaymentsCount'));
+        return view('admin.dashboard', compact(
+            'todayRevenue', 'todayTickets', 'todayCheckedIn', 'todaysBookings', 
+            'chartData', 'chartLabels', 'ticketsPerMovie', 'pendingPaymentsCount',
+            'startDate', 'endDate'
+        ));
     })->name('dashboard');
 
     // Staff
@@ -156,6 +199,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Payment Verification
     Route::get('/payments', [\App\Http\Controllers\Admin\PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/payments/export', [\App\Http\Controllers\Admin\PaymentController::class, 'export'])->name('payments.export');
     Route::post('/payments/{payment}/approve', [\App\Http\Controllers\Admin\PaymentController::class, 'approve'])->name('payments.approve');
     Route::post('/payments/{payment}/reject', [\App\Http\Controllers\Admin\PaymentController::class, 'reject'])->name('payments.reject');
 });

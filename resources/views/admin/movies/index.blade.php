@@ -36,7 +36,7 @@
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
                                     <td class="px-4 py-3">
                                         @if($movie->imagePath)
-                                            <img src="{{ asset('storage/' . $movie->imagePath) }}" alt="Poster" class="w-12 h-16 object-cover rounded shadow-sm">
+                                            <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="Poster" class="w-12 h-16 object-cover rounded shadow-sm">
                                         @else
                                             <div class="w-12 h-16 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center text-[10px] text-gray-500">No Image</div>
                                         @endif

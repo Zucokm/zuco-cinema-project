@@ -56,13 +56,13 @@
                         @if($movie->imagePath)
                             <div>
                                 <p class="text-sm text-gray-500 mb-2">Current Poster:</p>
-                                <img src="{{ asset('storage/'.$movie->imagePath) }}" class="w-24 h-32 object-cover rounded">
+                                <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/'.$movie->imagePath) }}" class="w-24 h-32 object-cover rounded">
                             </div>
                         @endif
                         @if($movie->bgImagePath)
                             <div>
                                 <p class="text-sm text-gray-500 mb-2">Current BG:</p>
-                                <img src="{{ asset('storage/'.$movie->bgImagePath) }}" class="w-48 h-24 object-cover rounded">
+                                <img src="{{ str_starts_with($movie->bgImagePath, 'http') ? $movie->bgImagePath : asset('storage/'.$movie->bgImagePath) }}" class="w-48 h-24 object-cover rounded">
                             </div>
                         @endif
                     </div>

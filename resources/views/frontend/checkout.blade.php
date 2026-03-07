@@ -80,7 +80,7 @@
                         <div class="flex gap-4 mb-6">
                             <div class="w-20 rounded-lg overflow-hidden shrink-0 border border-gray-700">
                                 @if($showtime->movie->imagePath)
-                                <img src="{{ asset('storage/' . $showtime->movie->imagePath) }}" alt="Poster" class="w-full h-auto object-cover">
+                                <img src="{{ str_starts_with($showtime->movie->imagePath, 'http') ? $showtime->movie->imagePath : asset('storage/' . $showtime->movie->imagePath) }}" alt="Poster" class="w-full h-auto object-cover">
                                 @else
                                 <div class="w-full h-28 bg-gray-800"></div>
                                 @endif

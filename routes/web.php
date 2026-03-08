@@ -6,6 +6,10 @@ use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Frontend\BookingController;
 use App\Http\Controllers\Frontend\PageController;
 
+use App\Http\Controllers\ContactController;
+
+
+
 // ==========================================
 
 // ==========================================
@@ -14,6 +18,10 @@ Route::get('/movies', [PageController::class, 'movies'])->name('movies.index');
 Route::get('/cinemas', [PageController::class, 'cinemas'])->name('cinemas.index');
 Route::get('/movies/{movie}', [PageController::class, 'movieDetails'])->name('movie.details');
 Route::get('/cinemas/{cinema}', [PageController::class, 'cinemaDetails'])->name('cinema.details');
+Route::get('/contact-us', [ContactController::class, 'index'])->name('contact.index');
+Route::post('/contact-us', [ContactController::class, 'store'])->name('contact.store');
+Route::view('/about-us', 'frontend.about')->name('about');
+
 
 
 // ==========================================

@@ -20,7 +20,7 @@ class BookingController extends Controller
 
         $bookedSeatIds = Ticket::whereHas('booking', function ($query) use ($showtime) {
             $query->where('showtime_id', $showtime->id)
-                ->whereIn('status', ['pending', 'confirmed']);
+                ->whereIn('status', ['pending', 'confirmed', 'checked-in']);
         })->pluck('seat_id')->toArray();
 
         return view('frontend.seat_selection', compact('showtime', 'cinemaHall', 'seatsByRow', 'bookedSeatIds'));
@@ -150,7 +150,7 @@ class BookingController extends Controller
                 // ဒီ Showtime အတွက် ရွေးထားတဲ့ခုံတွေက ရောင်းပြီးသား (သို့) Pending ဖြစ်နေပြီလား စစ်မယ်
                 $isTaken = Ticket::whereHas('booking', function ($query) use ($showtime) {
                     $query->where('showtime_id', $showtime->id)
-                          ->whereIn('status', ['confirmed', 'pending']);
+                          ->whereIn('status', ['confirmed', 'pending', 'checked-in']);
                 })->whereIn('seat_id', $seatIds)->exists();
 
                 if ($isTaken) {

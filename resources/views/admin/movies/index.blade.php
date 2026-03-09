@@ -1,74 +1,162 @@
 <x-app-layout>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #4f46e5; border-radius: 10px; }
+    </style>
+
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('All Movies') }}
-            </h2>
-            <a href="{{ route('admin.movies.create') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition">
-                + Add New Movie
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="flex items-center gap-4 group">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-indigo-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-xl"></div>
+                    <div class="relative p-2.5 bg-[#111]/80 backdrop-blur-md border border-indigo-500/20 rounded-xl group-hover:border-indigo-500/50 transition-colors duration-300">
+                        <svg class="w-6 h-6 text-indigo-400 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="font-black text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                        Movies Management
+                    </h2>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-0.5">All Movies & Details</p>
+                </div>
+            </div>
+            
+            <a href="{{ route('admin.movies.create') }}" class="relative inline-flex group">
+                <div class="absolute transition-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl blur-md group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200"></div>
+                <div class="relative inline-flex items-center gap-2 bg-[#111] border border-indigo-500/50 group-hover:border-transparent text-white font-bold py-2.5 px-6 rounded-xl transition-all duration-300 shadow-[0_0_20px_rgba(79,70,229,0.2)] text-sm">
+                    <svg class="w-4 h-4 text-indigo-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Add New Movie</span>
+                </div>
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="bg-[#0a0a0a] min-h-[calc(100vh-140px)] py-10 relative overflow-hidden">
+        
+        <div class="absolute top-[10%] left-[-10%] w-[40rem] h-[40rem] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            
             @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded shadow-sm">
-                    {{ session('success') }}
+            <div x-data="{ show: true }" x-show="show" x-transition 
+                 class="mb-8 bg-green-500/10 border border-green-500/30 backdrop-blur-md text-green-400 px-6 py-4 rounded-2xl relative shadow-[0_10px_30px_rgba(34,197,94,0.1)] flex items-start gap-4" role="alert">
+                <div class="bg-green-500/20 rounded-xl p-2 shrink-0 text-green-400 mt-0.5">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <strong class="font-black text-lg tracking-wide block text-white">Action Successful!</strong>
+                    <span class="block text-sm font-medium opacity-80 mt-1">{{ session('success') }}</span>
+                </div>
+                <button @click="show = false" class="absolute top-4 right-4 text-green-500/50 hover:text-green-400 transition-colors p-1.5 hover:bg-green-500/20 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            @endif
+
+            <div class="bg-[#111]/80 backdrop-blur-xl border border-gray-800 shadow-2xl rounded-[1.5rem] overflow-hidden">
+                
+                @if($movies->isEmpty())
+                    <div class="py-24 text-center flex flex-col items-center">
+                        <div class="relative w-24 h-24 mb-6">
+                            <div class="absolute inset-0 bg-indigo-600 blur-xl opacity-20 rounded-full"></div>
+                            <div class="relative w-full h-full bg-[#0a0a0a] rounded-full border border-gray-800 flex items-center justify-center shadow-inner">
+                                <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-black text-white mb-2">No Movies Found</h3>
+                        <p class="text-gray-500 font-medium max-w-md mx-auto mb-8">Your database is empty. Add your first movie to start showing it in cinemas.</p>
+                        <a href="{{ route('admin.movies.create') }}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3.5 rounded-xl font-bold transition shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+                            + Add Movie Now
+                        </a>
+                    </div>
+                @else
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="w-full text-left whitespace-nowrap">
+                            <thead class="bg-[#0a0a0a]/50 border-b border-gray-800">
+                                <tr>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest w-20">Poster</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Movie Details</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Specs</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest">Release Date</th>
+                                    <th class="px-6 py-4 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-800/60">
+                                @foreach ($movies as $movie)
+                                <tr class="hover:bg-gray-800/30 transition-colors group">
+                                    
+                                    <td class="px-6 py-4">
+                                        <div class="w-14 h-20 rounded-lg overflow-hidden border border-gray-700 bg-[#0a0a0a] shadow-md group-hover:border-indigo-500/50 transition-colors relative">
+                                            @if($movie->imagePath)
+                                                <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="Poster" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                                            @else
+                                                <div class="w-full h-full flex items-center justify-center flex-col text-gray-600">
+                                                    <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4">
+                                        <div class="text-base font-black text-white mb-1 group-hover:text-indigo-400 transition-colors">{{ $movie->title }}</div>
+                                        <div class="text-xs text-gray-500 font-medium flex items-center gap-1.5">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Director: <span class="text-gray-300">{{ $movie->director ?? 'Unknown' }}</span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col gap-2 items-start">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">
+                                                {{ $movie->genre ?? 'N/A' }}
+                                            </span>
+                                            <span class="inline-flex items-center gap-1 text-gray-400 text-xs font-medium">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                                {{ $movie->duration }} mins
+                                            </span>
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm font-bold text-gray-300">
+                                            {{ \Carbon\Carbon::parse($movie->releaseDate)->format('d M, Y') }}
+                                        </div>
+                                        <div class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">
+                                            {{ \Carbon\Carbon::parse($movie->releaseDate)->diffForHumans() }}
+                                        </div>
+                                    </td>
+                                    
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <a href="{{ route('admin.movies.edit', $movie->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0a0a0a] border border-gray-700 hover:border-indigo-500 text-gray-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-all duration-300" title="Edit Movie">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                            </a>
+                                            
+                                            <form action="{{ route('admin.movies.destroy', $movie->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to permanently delete this movie?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[#0a0a0a] border border-gray-700 hover:border-red-500 text-gray-400 hover:text-red-500 hover:bg-red-500/10 transition-all duration-300" title="Delete Movie">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+            @if(method_exists($movies, 'hasPages') && $movies->hasPages())
+                <div class="mt-8 bg-[#111]/80 backdrop-blur-md p-4 rounded-[1.5rem] border border-gray-800 shadow-xl">
+                    {{ $movies->links() }}
                 </div>
             @endif
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b dark:border-gray-700">
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300">Poster</th>
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300">Title</th>
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300">Genre</th>
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300">Duration</th>
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300">Release Date</th>
-                                <th class="px-4 py-3 text-gray-700 dark:text-gray-300 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y dark:divide-gray-700">
-                            @forelse ($movies as $movie)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                                    <td class="px-4 py-3">
-                                        @if($movie->imagePath)
-                                            <img src="{{ str_starts_with($movie->imagePath, 'http') ? $movie->imagePath : asset('storage/' . $movie->imagePath) }}" alt="Poster" class="w-12 h-16 object-cover rounded shadow-sm">
-                                        @else
-                                            <div class="w-12 h-16 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center text-[10px] text-gray-500">No Image</div>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                                        {{ $movie->title }}
-                                        <div class="text-xs text-gray-500 italic">{{ $movie->director }}</div>
-                                    </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $movie->genre }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $movie->duration }} mins</td>
-                                    <td class="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{{ $movie->releaseDate }}</td>
-                                    <td class="px-4 py-3 text-right space-x-2">
-                                        <a href="{{ route('admin.movies.edit', $movie->id) }}" class="text-indigo-600 hover:text-indigo-900 text-sm font-bold">Edit</a>
-                                        
-                                        <form action="{{ route('admin.movies.destroy', $movie->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this movie?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900 text-sm font-bold">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-4 py-10 text-center text-gray-500">
-                                        No movies found. <a href="{{ route('admin.movies.create') }}" class="text-indigo-600 underline">Add one now?</a>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
     </div>
 </x-app-layout>

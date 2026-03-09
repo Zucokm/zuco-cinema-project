@@ -1,46 +1,69 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Edit Seat Type: ') }} {{ $seat_type->name }}
-        </h2>
+        <div class="flex items-center gap-4 group">
+            <div class="relative">
+                <div class="absolute inset-0 bg-yellow-500 blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-xl"></div>
+                <div class="relative p-2.5 bg-[#111]/80 backdrop-blur-md border border-yellow-500/20 rounded-xl group-hover:border-yellow-500/50 transition-colors duration-300">
+                    <svg class="w-6 h-6 text-yellow-500 transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </div>
+            </div>
+            <div>
+                <h2 class="font-black text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                    Edit Category
+                </h2>
+                <p class="text-xs font-bold text-yellow-500 uppercase tracking-widest mt-0.5">{{ $seat_type->name }}</p>
+            </div>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+    <div class="bg-[#0a0a0a] min-h-[calc(100vh-140px)] py-10 relative overflow-hidden">
+        
+        <div class="absolute top-[10%] left-[-10%] w-[40rem] h-[40rem] bg-yellow-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="bg-[#111]/80 backdrop-blur-xl overflow-hidden shadow-2xl sm:rounded-[2rem] border border-gray-800/60 p-6 sm:p-10">
+                
                 <form method="POST" action="{{ route('admin.seat-types.update', $seat_type->id) }}">
                     @csrf
                     @method('PATCH')
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <x-input-label for="name" :value="__('Seat Type Name')" />
-                            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" value="{{ old('name', $seat_type->name) }}" required autofocus />
-                            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                            <label for="name" class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Category Name <span class="text-red-500">*</span></label>
+                            <input id="name" type="text" name="name" required value="{{ old('name', $seat_type->name) }}" autofocus
+                                class="w-full bg-[#0a0a0a] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-bold transition-colors shadow-inner placeholder-gray-700">
+                            <x-input-error :messages="$errors->get('name')" class="mt-2 text-red-400 text-xs" />
                         </div>
 
                         <div>
-                            <x-input-label for="price" :value="__('Price (MMK)')" />
-                            <x-text-input id="price" class="block mt-1 w-full" type="number" step="100" name="price" value="{{ old('price', $seat_type->price) }}" required />
-                            <x-input-error :messages="$errors->get('price')" class="mt-2" />
+                            <label for="price" class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Base Price (Ks) <span class="text-red-500">*</span></label>
+                            <input id="price" type="number" step="100" name="price" required value="{{ old('price', $seat_type->price) }}" 
+                                class="w-full bg-[#0a0a0a] border border-gray-800 text-white rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-bold transition-colors shadow-inner placeholder-gray-700">
+                            <x-input-error :messages="$errors->get('price')" class="mt-2 text-red-400 text-xs" />
                         </div>
                     </div>
 
-                    <div class="mt-6">
-                        <x-input-label for="description" :value="__('Description (Optional)')" />
-                        <textarea id="description" name="description" rows="3" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 rounded-md shadow-sm">{{ old('description', $seat_type->description) }}</textarea>
-                        <x-input-error :messages="$errors->get('description')" class="mt-2" />
+                    <div class="mb-6 bg-[#0a0a0a]/50 p-6 rounded-2xl border border-gray-800">
+                        <label for="description" class="block text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Description (Optional)
+                        </label>
+                        <textarea id="description" name="description" rows="3" 
+                            class="w-full bg-[#111] border border-gray-700 text-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 font-medium transition-colors shadow-inner placeholder-gray-600 resize-y">{{ old('description', $seat_type->description) }}</textarea>
+                        <x-input-error :messages="$errors->get('description')" class="mt-2 text-red-400 text-xs" />
                     </div>
 
-                    <div class="flex items-center justify-end mt-6 border-t pt-4">
-                        <x-secondary-button onclick="window.history.back()" class="me-3">
-                            {{ __('Cancel') }}
-                        </x-secondary-button>
-                        <x-primary-button>
-                            {{ __('Update Seat Type') }}
-                        </x-primary-button>
+                    <div class="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-gray-800/60">
+                        <button type="button" onclick="window.history.back()" class="px-6 py-3 rounded-xl text-sm font-bold text-gray-400 hover:text-white bg-transparent border border-gray-700 hover:border-gray-500 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-gradient-to-r from-yellow-600 to-orange-500 hover:from-yellow-500 hover:to-orange-400 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(202,138,4,0.3)] transform hover:-translate-y-0.5 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Update Category
+                        </button>
                     </div>
                 </form>
+
             </div>
         </div>
     </div>

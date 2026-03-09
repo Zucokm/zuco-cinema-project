@@ -1,19 +1,31 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="p-2 bg-[#df1873]/10 rounded-lg">
-                    <svg class="w-6 h-6 text-[#df1873]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            
+            <div class="flex items-center gap-4 group">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-[#df1873] blur-lg opacity-20 group-hover:opacity-40 transition-opacity duration-500 rounded-xl"></div>
+                    <div class="relative p-2.5 bg-[#111]/80 backdrop-blur-md border border-[#df1873]/20 rounded-xl group-hover:border-[#df1873]/50 transition-colors duration-300">
+                        <svg class="w-6 h-6 text-[#df1873] transform group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    </div>
                 </div>
-                <h2 class="font-black text-2xl text-white tracking-tight">
-                    Overview Analytics
-                </h2>
+                <div>
+                    <h2 class="font-black text-2xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                        Overview Analytics
+                    </h2>
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-0.5">Zuco Admin Panel</p>
+                </div>
             </div>
             
-            <a href="{{ route('admin.scanner') }}" class="bg-[#df1873] hover:bg-[#c21463] text-white font-bold py-2.5 px-5 rounded-xl shadow-[0_0_15px_rgba(223,24,115,0.4)] transition-all transform hover:-translate-y-0.5 flex items-center gap-2 group">
-                <svg class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                Scan Ticket
+            <a href="{{ route('admin.scanner') }}" class="relative inline-flex group">
+                <div class="absolute transition-all duration-1000 opacity-70 -inset-px bg-gradient-to-r from-[#df1873] to-purple-600 rounded-xl blur-md group-hover:opacity-100 group-hover:-inset-1 group-hover:duration-200 animate-pulse"></div>
+                
+                <div class="relative inline-flex items-center gap-2 bg-[#111] border border-[#df1873]/50 group-hover:border-transparent group-hover:bg-gradient-to-r group-hover:from-[#df1873] group-hover:to-purple-600 text-white font-bold py-2.5 px-6 rounded-xl transition-all duration-300 transform group-hover:-translate-y-0.5 shadow-[0_0_20px_rgba(223,24,115,0.2)]">
+                    <svg class="w-5 h-5 text-[#df1873] group-hover:text-white group-hover:rotate-12 transition-all duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <span>Scan Ticket</span>
+                </div>
             </a>
+            
         </div>
     </x-slot>
 

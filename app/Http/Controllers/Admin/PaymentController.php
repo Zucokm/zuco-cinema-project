@@ -23,14 +23,11 @@ class PaymentController extends Controller
         }
 
         // Date Filter Logic
+        // Date Filter Logic (Updated)
         if ($request->filled('date')) {
-            if ($status === 'history') {
-                $query->whereDate('created_at', $request->date);
-            } else {
-                $query->whereHas('booking.showtime', function ($q) use ($request) {
-                    $q->whereDate('date', $request->date);
-                });
-            }
+            $query->whereHas('booking.showtime', function ($q) use ($request) {
+                $q->whereDate('date', $request->date);
+            });
         }
 
         // Pagination
@@ -77,7 +74,7 @@ class PaymentController extends Controller
             "Expires" => "0"
         ];
 
-        $callback = function() use ($payments) {
+        $callback = function () use ($payments) {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['ID', 'Booking Ref', 'Customer', 'Amount', 'Method', 'Status', 'Date', 'Transaction ID']);
 

@@ -175,6 +175,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         ));
     })->name('dashboard');
 
+    // Reports
+    Route::get('/reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+
     // Staff
     Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
     Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');

@@ -152,6 +152,11 @@
                             <span class="absolute bottom-0 left-0 {{ request()->routeIs('my-tickets') ? 'w-full' : 'w-0' }} h-0.5 bg-indigo-500 transition-all duration-300 ease-out group-hover:w-full rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
                         </a>
 
+                        <a href="{{ route('admin.reports.index') }}" class="relative font-bold text-sm transition-colors py-2 group {{ request()->routeIs('admin.reports.index') ? 'text-white' : 'text-gray-400 hover:text-white' }}">
+                            Reports
+                            <span class="absolute bottom-0 left-0 {{ request()->routeIs('admin.reports.index') ? 'w-full' : 'w-0' }} h-0.5 bg-[#df1873] transition-all duration-300 ease-out group-hover:w-full rounded-full shadow-[0_0_8px_rgba(223,24,115,0.8)]"></span>
+                        </a>
+
                         <div x-data="{ opsOpen: false }" class="relative" @mouseenter="opsOpen = true" @mouseleave="opsOpen = false">
                             <button class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 text-gray-400 hover:text-white hover:bg-white/5">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -269,6 +274,10 @@
 
                 <a href="{{ route('my-tickets') }}" class="block px-4 py-3 rounded-xl font-bold text-base transition-colors {{ request()->routeIs('my-tickets') ? 'bg-indigo-500/20 text-indigo-400' : 'text-gray-300 hover:text-white hover:bg-white/5' }}">
                     My Tickets
+                </a>
+
+                <a href="{{ route('admin.reports.index') }}" class="block px-4 py-3 rounded-xl font-bold text-base transition-colors {{ request()->routeIs('admin.reports.index') ? 'bg-[#df1873]/20 text-[#df1873]' : 'text-gray-300 hover:text-white hover:bg-white/5' }}">
+                    Reports
                 </a>
                 
                 <div class="pt-4 pb-2">

@@ -1,8 +1,8 @@
 @php
     // Logic to determine if we should show the Frontend Nav or Admin Nav
-    $isFrontendPage = request()->routeIs('home', 'movie.*','profile.*','about', 'contact.*', 'movies.*', 'book.*', 'cinema.*', 'cinemas.*', 'login', 'my-tickets', 'register', 'password.*');
+    $isFrontendPage = request()->routeIs('home', 'movie.*','profile.*','about', 'contact.*', 'movies.*', 'book.*', 'cinema.*', 'cinemas.*', 'login', 'my-tickets', 'register', 'password.*', 'privacy');
     $isAdminUser = Auth::check() && Auth::user()->role === 'admin';
-    $showFrontendNav = $isFrontendPage && !$isAdminUser;
+    $showFrontendNav = $isFrontendPage || !Auth::check();
 
     // Logic for Dashboard Route based on role
     $dashboardRoute = $isAdminUser ? route('admin.dashboard') : route('home');

@@ -21,6 +21,7 @@ Route::get('/cinemas/{cinema}', [PageController::class, 'cinemaDetails'])->name(
 Route::get('/contact-us', [ContactController::class, 'index'])->name('contact.index');
 Route::post('/contact-us', [ContactController::class, 'store'])->name('contact.store');
 Route::view('/about-us', 'frontend.about')->name('about');
+Route::view('/privacy-policy', 'frontend.privacy')->name('privacy');
 
 
 

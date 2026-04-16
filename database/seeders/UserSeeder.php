@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
         $this->command->info('Creating Admin and 500 Users...');
 
         User::firstOrCreate(
-            ['email' => 'admin@gmail.com'],
+            ['email' => 'admin@zuco.com'],
             [
                 'name' => 'Admin User',
                 'password' => Hash::make('password'),
@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'customer@gmail.com'],
+            ['email' => 'customer@zuco.com'],
             [
                 'name' => 'Customer User',
                 'password' => Hash::make('password'),

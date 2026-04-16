@@ -22,8 +22,18 @@ class UserSeeder extends Seeder
             ]
         );
 
+        User::firstOrCreate(
+            ['email' => 'customer@gmail.com'],
+            [
+                'name' => 'Customer User',
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'email_verified_at' => now(),
+            ]
+        );
+
         // Chunk နဲ့ toArray() မလုပ်တော့ဘဲ create() နဲ့ပဲ တိုက်ရိုက်ဆောက်မယ် (Date Format Error မတက်အောင်)
-        User::factory(500)->create();
+        User::factory(499)->create();
 
         $this->command->info('Users seeded successfully.');
     }
